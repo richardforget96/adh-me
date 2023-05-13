@@ -6,7 +6,7 @@
 }
 
 body {
-  font-family: "Roboto", Arial, sans-serif;
+  font-family: Arial, sans-serif;
   background-color: #f9f9f9;
   color: #333;
   line-height: 1.6;
@@ -19,9 +19,8 @@ header {
 }
 
 h1 {
-  font-size: 48px;
+  font-size: 36px;
   margin: 0;
-  letter-spacing: 2px;
 }
 
 nav ul {
@@ -31,7 +30,7 @@ nav ul {
 }
 
 nav ul li {
-  display: inline-block;
+  display: inline;
   margin-right: 20px;
 }
 
@@ -61,14 +60,12 @@ main {
 }
 
 h2 {
-  font-size: 32px;
+  font-size: 28px;
   margin-bottom: 20px;
-  color: #000;
 }
 
 p {
   margin-bottom: 20px;
-  line-height: 1.8;
 }
 
 .btn {
@@ -95,35 +92,4 @@ footer {
 
 footer p {
   margin: 0;
-}
-
-/* Additional Styles for WordPress Look */
-body {
-  margin: 0;
-}
-
-.container {
-  padding: 20px;
-  background-color: #fff;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-}
-
-h1 {
-  font-family: "Open Sans", sans-serif;
-  font-weight: bold;
-}
-
-nav ul li a {
-  font-family: "Open Sans", sans-serif;
-}
-
-.btn {
-  font-family: "Open Sans", sans-serif;
-}
-
-footer {
-  background-color: #f9f9f9;
-  color: #666;
-  font-size: 12px;
-  padding: 10px 20px;
 }
