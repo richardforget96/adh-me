@@ -96,3 +96,34 @@ footer {
 footer p {
   margin: 0;
 }
+
+/* Additional Styles for WordPress Look */
+body {
+  margin: 0;
+}
+
+.container {
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  font-family: "Open Sans", sans-serif;
+  font-weight: bold;
+}
+
+nav ul li a {
+  font-family: "Open Sans", sans-serif;
+}
+
+.btn {
+  font-family: "Open Sans", sans-serif;
+}
+
+footer {
+  background-color: #f9f9f9;
+  color: #666;
+  font-size: 12px;
+  padding: 10px 20px;
+}
