@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Loo - Liquid Glass Demo</title>
+    <title>Loo - Complete Demo (Waze-Style)</title>
     <style>
         * {
             margin: 0;
@@ -15,34 +14,16 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
             overflow: hidden;
             height: 100vh;
-            width: 100vw;
             background: linear-gradient(135deg, #e0ecfa 0%, #c8daf2 100%);
             position: relative;
             transition: background 0.4s ease;
         }
 
-        /* Dynamic background gradient overlay */
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, rgba(0,122,255,0.12) 0%, transparent 70%);
-            pointer-events: none;
-            transition: opacity 0.4s ease;
-        }
-
         body.dark-mode {
             background: linear-gradient(135deg, #0d0d14 0%, #1e1e26 100%);
-        }
-
-        body.dark-mode::before {
-            background: radial-gradient(circle, rgba(100,150,255,0.2) 0%, transparent 70%);
         }
 
         .app-container {
@@ -54,7 +35,7 @@
             position: relative;
         }
 
-        /* LIQUID GLASS HEADER */
+        /* HEADER */
         .header {
             height: 80px;
             display: flex;
@@ -65,54 +46,12 @@
             z-index: 10;
             backdrop-filter: blur(40px) saturate(180%);
             -webkit-backdrop-filter: blur(40px) saturate(180%);
-            background: linear-gradient(180deg,
-                rgba(255,255,255,0.5) 0%,
-                rgba(255,255,255,0.25) 100%);
-            box-shadow:
-                0 2px 20px rgba(0,0,0,0.1),
-                inset 0 1px 0 rgba(255,255,255,0.8);
-            transition: all 0.4s ease;
+            background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.25) 100%);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.8);
         }
 
         body.dark-mode .header {
-            background: linear-gradient(180deg,
-                rgba(255,255,255,0.08) 0%,
-                rgba(255,255,255,0.02) 100%);
-            box-shadow:
-                0 2px 20px rgba(0,0,0,0.3),
-                inset 0 1px 0 rgba(255,255,255,0.15);
-        }
-
-        /* Liquid highlight bar on top */
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg,
-                rgba(255,255,255,0.8) 0%,
-                rgba(255,255,255,0.4) 50%,
-                rgba(255,255,255,0.8) 100%);
-            filter: blur(1px);
-        }
-
-        body.dark-mode .header::before {
-            background: linear-gradient(90deg,
-                rgba(255,255,255,0.2) 0%,
-                rgba(255,255,255,0.1) 50%,
-                rgba(255,255,255,0.2) 100%);
-        }
-
-        .app-title-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .app-icon {
-            font-size: 28px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
         }
 
         .app-title {
@@ -121,114 +60,41 @@
             background: linear-gradient(135deg, #1a3d66 0%, #2d5a8c 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 1px 2px rgba(255,255,255,0.8);
-            transition: all 0.4s ease;
         }
 
         body.dark-mode .app-title {
             background: linear-gradient(135deg, #ffffff 0%, #cce5ff 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 1px 2px rgba(255,255,255,0.2);
         }
 
-        /* LIQUID GLASS BUTTON */
-        .btn {
-            width: 60px;
-            height: 60px;
-            border-radius: 16px;
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            background: linear-gradient(135deg,
-                rgba(255,255,255,0.8) 0%,
-                rgba(255,255,255,0.5) 100%);
-            border: 1.5px solid rgba(255,255,255,0.6);
-            box-shadow:
-                0 8px 16px rgba(0,0,0,0.12),
-                inset 0 1px 0 rgba(255,255,255,0.9);
+        .user-badge {
             display: flex;
             align-items: center;
-            justify-content: center;
+            gap: 6px;
+            padding: 6px 12px;
+            backdrop-filter: blur(20px);
+            background: rgba(255,255,255,0.3);
+            border-radius: 20px;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
         }
 
-        body.dark-mode .btn {
-            background: linear-gradient(135deg,
-                rgba(255,255,255,0.15) 0%,
-                rgba(255,255,255,0.08) 100%);
-            border: 1.5px solid rgba(255,255,255,0.2);
-            box-shadow:
-                0 8px 16px rgba(0,0,0,0.4),
-                inset 0 1px 0 rgba(255,255,255,0.2);
+        body.dark-mode .user-badge {
+            background: rgba(255,255,255,0.1);
         }
 
-        /* Specular highlight on button */
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 50%;
-            background: linear-gradient(180deg,
-                rgba(255,255,255,0.5) 0%,
-                transparent 100%);
-            border-radius: 16px 16px 0 0;
-            pointer-events: none;
-            filter: blur(2px);
+        .emergency-banner {
+            background: rgba(255,0,0,0.1);
+            padding: 8px 20px;
+            display: none;
+            align-items: center;
+            gap: 8px;
         }
 
-        body.dark-mode .btn::before {
-            background: linear-gradient(180deg,
-                rgba(255,255,255,0.15) 0%,
-                transparent 100%);
+        .emergency-banner.active {
+            display: flex;
         }
 
-        .btn:active {
-            transform: scale(0.94);
-            box-shadow:
-                0 4px 8px rgba(0,0,0,0.15),
-                inset 0 1px 0 rgba(255,255,255,0.6);
-        }
-
-        .btn svg {
-            width: 24px;
-            height: 24px;
-            position: relative;
-            z-index: 1;
-            transition: all 0.4s ease;
-        }
-
-        .btn.sun svg {
-            fill: url(#sunGradient);
-        }
-
-        .btn.moon svg {
-            fill: url(#moonGradient);
-        }
-
-        .btn.accent-blue svg {
-            fill: url(#blueGradient);
-        }
-
-        .btn.accent-cyan svg {
-            fill: url(#cyanGradient);
-        }
-
-        .btn.accent-green svg {
-            fill: url(#greenGradient);
-        }
-
-        .btn-wide {
-            width: 140px;
-        }
-
-        /* CONTENT */
         .content {
             flex: 1;
             padding: 20px;
@@ -236,608 +102,367 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        /* MAP VIEW WITH LIQUID GLASS */
-        .map-view {
-            background: linear-gradient(135deg, #a8d5ba 0%, #89b4a6 100%);
-            border-radius: 24px;
-            height: 100%;
-            position: relative;
-            box-shadow:
-                0 10px 40px rgba(0,0,0,0.15),
-                inset 0 1px 0 rgba(255,255,255,0.3);
-            border: 1.5px solid rgba(255,255,255,0.4);
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-        }
-
-        /* Liquid glass overlay on map border */
-        .map-view::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 24px;
-            background: linear-gradient(135deg,
-                rgba(255,255,255,0.3) 0%,
-                transparent 50%);
-            pointer-events: none;
-        }
-
-        .map-marker {
-            position: absolute;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            animation: dropIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
-        }
-
-        @keyframes dropIn {
-            from {
-                transform: translateY(-30px) scale(0.8);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0) scale(1);
-                opacity: 1;
-            }
-        }
-
-        .marker-pin {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg,
-                rgba(0,122,255,0.95) 0%,
-                rgba(0,100,220,0.7) 50%,
-                rgba(0,200,255,0.8) 100%);
-            border: 2px solid rgba(255,255,255,0.6);
-            box-shadow:
-                0 4px 12px rgba(0,122,255,0.4),
-                inset -4px -4px 8px rgba(0,0,0,0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 18px;
-            position: relative;
-        }
-
-        /* Specular highlight on marker */
-        .marker-pin::before {
-            content: '';
-            position: absolute;
-            top: 4px;
-            left: 4px;
-            width: 20px;
-            height: 20px;
-            background: radial-gradient(circle at center,
-                rgba(255,255,255,0.9) 0%,
-                transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-        }
-
-        .marker-label {
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            background: rgba(255,255,255,0.95);
-            padding: 4px 10px;
-            border-radius: 10px;
-            font-size: 10px;
-            font-weight: 600;
-            margin-top: 6px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            border: 0.5px solid rgba(255,255,255,0.5);
-            white-space: nowrap;
-        }
-
-        body.dark-mode .marker-label {
-            background: rgba(0,0,0,0.85);
-            color: white;
-            border: 0.5px solid rgba(255,255,255,0.2);
-        }
-
-        /* LIST VIEW */
-        .list-view {
-            display: none;
-        }
-
-        .list-view.active {
-            display: block;
-        }
-
-        /* LIQUID GLASS CARD */
         .bathroom-card {
             backdrop-filter: blur(30px) saturate(180%);
-            -webkit-backdrop-filter: blur(30px) saturate(180%);
-            background: linear-gradient(135deg,
-                rgba(255,255,255,0.7) 0%,
-                rgba(255,255,255,0.4) 100%);
+            background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.4) 100%);
             border-radius: 20px;
             padding: 18px;
             margin-bottom: 16px;
-            box-shadow:
-                0 8px 24px rgba(0,0,0,0.12),
-                inset 0 1px 0 rgba(255,255,255,0.9);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
             border: 1.5px solid rgba(255,255,255,0.6);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
+            cursor: pointer;
         }
 
         body.dark-mode .bathroom-card {
-            background: linear-gradient(135deg,
-                rgba(255,255,255,0.1) 0%,
-                rgba(255,255,255,0.05) 100%);
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
             border: 1.5px solid rgba(255,255,255,0.15);
-            box-shadow:
-                0 8px 24px rgba(0,0,0,0.4),
-                inset 0 1px 0 rgba(255,255,255,0.2);
-        }
-
-        /* Liquid glass highlight */
-        .bathroom-card::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg,
-                rgba(255,255,255,0.4) 0%,
-                transparent 50%);
-            border-radius: 20px;
-            pointer-events: none;
-        }
-
-        body.dark-mode .bathroom-card::before {
-            background: linear-gradient(135deg,
-                rgba(255,255,255,0.08) 0%,
-                transparent 50%);
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 14px;
-            position: relative;
-            z-index: 1;
         }
 
         .card-icon {
             width: 56px;
             height: 56px;
             border-radius: 50%;
-            background: linear-gradient(135deg,
-                rgba(0,122,255,0.9) 0%,
-                rgba(0,100,220,0.6) 50%,
-                rgba(0,200,255,0.7) 100%);
-            border: 1.5px solid rgba(255,255,255,0.5);
+            background: linear-gradient(135deg, rgba(0,122,255,0.9) 0%, rgba(0,200,255,0.7) 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 14px;
-            box-shadow:
-                0 4px 12px rgba(0,122,255,0.35),
-                inset -4px -4px 8px rgba(0,0,0,0.2);
             font-size: 26px;
             position: relative;
         }
 
-        /* Specular highlight on icon */
-        .card-icon::before {
-            content: '';
-            position: absolute;
-            top: 6px;
-            left: 6px;
-            width: 28px;
-            height: 28px;
-            background: radial-gradient(circle at center,
-                rgba(255,255,255,0.8) 0%,
-                transparent 70%);
-            border-radius: 50%;
+        .live-report {
+            background: rgba(255,149,0,0.15);
+            border: 1px solid rgba(255,149,0,0.3);
+            border-radius: 8px;
+            padding: 6px 12px;
+            margin: 12px 0;
+            font-size: 12px;
+            color: #ff9500;
         }
 
-        .card-info {
-            flex: 1;
-        }
-
-        .card-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #26263a;
-            margin-bottom: 5px;
-            transition: color 0.4s ease;
-        }
-
-        body.dark-mode .card-title {
-            color: #ffffff;
-        }
-
-        .card-subtitle {
-            font-size: 14px;
-            font-weight: 500;
-            color: #73738c;
-            transition: color 0.4s ease;
-        }
-
-        body.dark-mode .card-subtitle {
-            color: #999999;
-        }
-
-        .card-distance {
-            font-size: 16px;
-            font-weight: 700;
-            background: linear-gradient(90deg, #007AFF 0%, #00C8FF 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .card-divider {
-            height: 1px;
-            background: rgba(255,255,255,0.4);
-            margin: 14px 0;
-            position: relative;
-            z-index: 1;
-        }
-
-        body.dark-mode .card-divider {
-            background: rgba(255,255,255,0.15);
-        }
-
-        .card-details {
-            display: flex;
-            gap: 24px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .detail-item {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            font-size: 13px;
-            font-weight: 500;
-            color: #666677;
-        }
-
-        body.dark-mode .detail-item {
-            color: #999999;
-        }
-
-        .detail-item svg {
-            width: 14px;
-            height: 14px;
-            fill: #4d668c;
-        }
-
-        body.dark-mode .detail-item svg {
-            fill: #b3ccff;
-        }
-
-        /* CONTROL PANEL WITH LIQUID GLASS */
         .control-panel {
-            padding: 16px 20px;
-            backdrop-filter: blur(40px) saturate(180%);
-            -webkit-backdrop-filter: blur(40px) saturate(180%);
-            background: linear-gradient(180deg,
-                rgba(255,255,255,0.6) 0%,
-                rgba(255,255,255,0.3) 100%);
-            box-shadow:
-                0 -5px 30px rgba(0,0,0,0.1),
-                inset 0 1px 0 rgba(255,255,255,0.8);
+            padding: 12px 16px;
+            backdrop-filter: blur(40px);
+            background: linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.3) 100%);
             display: flex;
-            gap: 16px;
+            gap: 12px;
             justify-content: center;
-            transition: all 0.4s ease;
-            position: relative;
         }
 
         body.dark-mode .control-panel {
-            background: linear-gradient(180deg,
-                rgba(255,255,255,0.1) 0%,
-                rgba(255,255,255,0.04) 100%);
-            box-shadow:
-                0 -5px 30px rgba(0,0,0,0.3),
-                inset 0 1px 0 rgba(255,255,255,0.15);
+            background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.04) 100%);
         }
 
-        /* Top liquid highlight */
-        .control-panel::before {
-            content: '';
-            position: absolute;
+        .btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            backdrop-filter: blur(20px);
+            background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.5) 100%);
+            border: 1.5px solid rgba(255,255,255,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            position: relative;
+        }
+
+        body.dark-mode .btn {
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%);
+        }
+
+        .btn.emergency {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .btn.emergency.active {
+            background: linear-gradient(135deg, rgba(255,0,0,0.5) 0%, rgba(255,100,0,0.3) 100%);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .btn.wide {
+            width: 120px;
+        }
+
+        .modal {
+            position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            height: 1px;
-            background: rgba(255,255,255,0.8);
-            filter: blur(0.5px);
-        }
-
-        body.dark-mode .control-panel::before {
-            background: rgba(255,255,255,0.25);
-        }
-
-        /* LOADING */
-        .loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            backdrop-filter: blur(30px) saturate(180%);
-            -webkit-backdrop-filter: blur(30px) saturate(180%);
-            background: linear-gradient(135deg,
-                rgba(255,255,255,0.8) 0%,
-                rgba(255,255,255,0.6) 100%);
-            padding: 32px;
-            border-radius: 24px;
-            box-shadow:
-                0 15px 40px rgba(0,0,0,0.2),
-                inset 0 1px 0 rgba(255,255,255,0.9);
-            border: 1.5px solid rgba(255,255,255,0.6);
-            text-align: center;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
             display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
         }
 
-        body.dark-mode .loading {
-            background: linear-gradient(135deg,
-                rgba(0,0,0,0.85) 0%,
-                rgba(0,0,0,0.75) 100%);
-            border: 1.5px solid rgba(255,255,255,0.2);
+        .modal.active {
+            display: flex;
         }
 
-        .loading.active {
-            display: block;
-            animation: fadeIn 0.3s ease;
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            max-width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 20px;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
-            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        body.dark-mode .modal-content {
+            background: #1e1e26;
+            color: white;
         }
 
-        .spinner {
-            width: 44px;
-            height: 44px;
-            border: 4px solid rgba(0,122,255,0.2);
-            border-top-color: #007AFF;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin: 0 auto 14px;
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 20px 0;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .loading-text {
-            font-size: 15px;
-            font-weight: 600;
-            color: #1a1a1a;
-        }
-
-        body.dark-mode .loading-text {
-            color: #ffffff;
-        }
-
-        .map-placeholder-text {
-            font-size: 15px;
-            font-weight: 500;
-            color: rgba(255,255,255,0.95);
+        .stat-card {
+            background: rgba(255,255,255,0.5);
+            backdrop-filter: blur(20px);
+            border-radius: 12px;
+            padding: 16px;
             text-align: center;
-            padding: 24px;
-            backdrop-filter: blur(10px);
-            background: rgba(0,0,0,0.25);
-            border-radius: 16px;
-            max-width: 85%;
-            line-height: 1.6;
-            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        body.dark-mode .stat-card {
+            background: rgba(255,255,255,0.1);
         }
     </style>
 </head>
 <body>
-    <!-- SVG Gradients for icons -->
-    <svg width="0" height="0" style="position: absolute;">
-        <defs>
-            <linearGradient id="sunGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#FF9500;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#FF6B00;stop-opacity:1" />
-            </linearGradient>
-            <linearGradient id="moonGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#9F7AEA;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#6B46C1;stop-opacity:1" />
-            </linearGradient>
-            <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#007AFF;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#0051D5;stop-opacity:1" />
-            </linearGradient>
-            <linearGradient id="cyanGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#00C8FF;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#007AFF;stop-opacity:1" />
-            </linearGradient>
-            <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#34C759;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#30A14E;stop-opacity:1" />
-            </linearGradient>
-        </defs>
-    </svg>
-
     <div class="app-container">
-        <!-- Liquid Glass Header -->
         <div class="header">
-            <div class="app-title-container">
-                <div class="app-icon">💧</div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="font-size: 28px;">💧</div>
                 <div class="app-title">Loo</div>
             </div>
-            <button class="btn sun" id="darkModeBtn" aria-label="Toggle dark mode">
-                <svg id="darkModeIcon" viewBox="0 0 24 24">
-                    <path d="M12 18C8.68629 18 6 15.3137 6 12C6 8.68629 8.68629 6 12 6C15.3137 6 18 8.68629 18 12C18 15.3137 15.3137 18 12 18ZM12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16ZM11 1H13V4H11V1ZM11 20H13V23H11V20ZM3.51472 4.92893L4.92893 3.51472L7.05025 5.63604L5.63604 7.05025L3.51472 4.92893ZM16.9497 18.364L18.364 16.9497L20.4853 19.0711L19.0711 20.4853L16.9497 18.364ZM19.0711 3.51472L20.4853 4.92893L18.364 7.05025L16.9497 5.63604L19.0711 3.51472ZM5.63604 16.9497L7.05025 18.364L4.92893 20.4853L3.51472 19.0711L5.63604 16.9497ZM23 11V13H20V11H23ZM4 11V13H1V11H4Z"/>
-                </svg>
+            <div class="user-badge" onclick="openProfile()">
+                <span id="userLevel">🚽</span>
+                <span id="userPoints">250</span>
+            </div>
+            <button class="btn" style="width: 50px; height: 50px;" onclick="toggleDarkMode()">
+                <span id="darkModeIcon">☀️</span>
             </button>
         </div>
 
-        <!-- Content Area -->
-        <div class="content">
-            <!-- Map View -->
-            <div class="map-view" id="mapView">
-                <div class="map-placeholder-text">
-                    🗺️ Interactive map with bathroom locations<br><br>
-                    The real app uses MapKit with live OpenStreetMap data
+        <div class="emergency-banner" id="emergencyBanner">
+            <span style="color: #ff0000; font-weight: bold;">🚨 EMERGENCY MODE</span>
+            <span style="margin-left: auto; font-size: 12px;">Showing closest</span>
+        </div>
+
+        <div class="content" id="content"></div>
+
+        <div class="control-panel">
+            <button class="btn emergency" id="emergencyBtn" onclick="toggleEmergency()">⚡</button>
+            <button class="btn" onclick="openFilters()">🎚️</button>
+            <button class="btn wide" onclick="toggleView()"><span id="viewIcon">📋</span></button>
+            <button class="btn" onclick="refresh()">🔄</button>
+        </div>
+    </div>
+
+    <div class="modal" id="profileModal">
+        <div class="modal-content" style="width: 90%; max-width: 400px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                <h2>Your Profile</h2>
+                <button onclick="closeProfile()" style="background:none; border:none; font-size: 24px; cursor: pointer;">✕</button>
+            </div>
+            <div style="text-align: center; padding: 24px; background: rgba(0,122,255,0.1); border-radius: 16px; margin-bottom: 20px;">
+                <div style="font-size: 60px; margin-bottom: 12px;">🚽</div>
+                <h3>Bathroom Scout</h3>
+                <p style="margin: 8px 0;">250 points</p>
+                <div style="display: flex; gap: 20px; justify-content: center; margin-top: 16px;">
+                    <div>
+                        <div style="font-size: 24px; font-weight: bold; color: #4CAF50;">85</div>
+                        <small>Trust Score</small>
+                    </div>
+                    <div>
+                        <div style="font-size: 24px; font-weight: bold; color: #2196F3;">42</div>
+                        <small>Reports</small>
+                    </div>
                 </div>
             </div>
 
-            <!-- List View -->
-            <div class="list-view" id="listView"></div>
+            <h3>Your Contributions</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div style="font-size: 32px;">🆕</div>
+                    <div style="font-size: 20px; font-weight: bold;">5</div>
+                    <div style="font-size: 12px;">Bathrooms Added</div>
+                </div>
+                <div class="stat-card">
+                    <div style="font-size: 32px;">🔑</div>
+                    <div style="font-size: 20px; font-weight: bold;">12</div>
+                    <div style="font-size: 12px;">Codes Shared</div>
+                </div>
+                <div class="stat-card">
+                    <div style="font-size: 32px;">📸</div>
+                    <div style="font-size: 20px; font-weight: bold;">8</div>
+                    <div style="font-size: 12px;">Photos</div>
+                </div>
+                <div class="stat-card">
+                    <div style="font-size: 32px;">⭐</div>
+                    <div style="font-size: 20px; font-weight: bold;">17</div>
+                    <div style="font-size: 12px;">Reviews</div>
+                </div>
+            </div>
 
-            <!-- Loading -->
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-                <div class="loading-text">Searching...</div>
+            <div style="background: rgba(76,175,80,0.1); border-radius: 12px; padding: 16px; margin-top: 20px;">
+                <h4 style="margin-bottom: 12px;">🔒 Privacy First</h4>
+                <div style="font-size: 13px; line-height: 1.6;">
+                    ✓ No account required<br>
+                    ✓ All data stored locally<br>
+                    ✓ Zero tracking<br>
+                    ✓ Fully anonymous
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- Liquid Glass Control Panel -->
-        <div class="control-panel">
-            <button class="btn accent-blue" id="refreshBtn" aria-label="Refresh">
-                <svg viewBox="0 0 24 24">
-                    <path d="M5.463 4.433A9.961 9.961 0 0 1 12 2c5.523 0 10 4.477 10 10 0 2.136-.67 4.116-1.81 5.74L17 12h3A8 8 0 0 0 6.46 6.228l-.997-1.795zm13.074 15.134A9.961 9.961 0 0 1 12 22C6.477 22 2 17.523 2 12c0-2.136.67-4.116 1.81-5.74L7 12H4a8 8 0 0 0 13.54 5.772l.997 1.795z"/>
-                </svg>
-            </button>
-            <button class="btn btn-wide accent-cyan" id="toggleViewBtn" aria-label="Toggle view">
-                <svg id="viewIcon" viewBox="0 0 24 24">
-                    <path d="M8 4h13v2H8V4zm-5-.5h3v3H3v-3zm0 7h3v3H3v-3zm0 7h3v3H3v-3zM8 11h13v2H8v-2zm0 7h13v2H8v-2z"/>
-                </svg>
-            </button>
-            <button class="btn accent-green" id="locationBtn" aria-label="My location">
-                <svg viewBox="0 0 24 24">
-                    <path d="M12 20.9l4.95-4.95a7 7 0 1 0-9.9 0L12 20.9zm0 2.828l-6.364-6.364a9 9 0 1 1 12.728 0L12 23.728zM12 13a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 2a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/>
-                </svg>
-            </button>
+    <div class="modal" id="detailModal">
+        <div class="modal-content" style="width: 90%; max-width: 400px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                <h2 id="detailName">Bathroom Details</h2>
+                <button onclick="closeDetail()" style="background:none; border:none; font-size: 24px; cursor: pointer;">✕</button>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                <div style="font-size: 40px;">💧</div>
+                <div style="flex: 1;">
+                    <div>⭐⭐⭐⭐⭐ 4.8</div>
+                    <div style="font-size: 14px; color: #007AFF;">0.2 mi away</div>
+                </div>
+                <button style="font-size: 28px; background: none; border: none;">⭐</button>
+            </div>
+            <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+                <button onclick="openReports()" style="flex: 1; padding: 12px; background: rgba(255,149,0,0.1); border: 1px solid rgba(255,149,0,0.3); border-radius: 12px;">📢 Report</button>
+                <button style="flex: 1; padding: 12px; background: rgba(0,122,255,0.1); border: 1px solid rgba(0,122,255,0.3); border-radius: 12px;">🧭 Directions</button>
+            </div>
+            <h3>Live Reports</h3>
+            <div style="background: rgba(0,0,0,0.05); border-radius: 12px; padding: 16px; margin: 12px 0;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 24px;">✨</span>
+                    <div style="flex: 1;">
+                        <div style="font-weight: bold;">Clean!</div>
+                        <div style="font-size: 12px;">2 min ago • Verified ✓</div>
+                    </div>
+                    <button style="background: none; border: none; font-size: 20px;">👍 5</button>
+                    <button style="background: none; border: none; font-size: 20px;">❤️ 3</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="reportModal">
+        <div class="modal-content" style="width: 90%; max-width: 400px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                <h2>Quick Report</h2>
+                <button onclick="closeReports()" style="background:none; border:none; font-size: 24px; cursor: pointer;">✕</button>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+                <div onclick="submitReport('clean')" style="background: rgba(255,255,255,0.5); border-radius: 16px; padding: 24px; text-align: center; cursor: pointer;">
+                    <div style="font-size: 40px; margin-bottom: 8px;">✨</div>
+                    <div style="font-weight: bold;">Clean</div>
+                </div>
+                <div onclick="submitReport('dirty')" style="background: rgba(255,255,255,0.5); border-radius: 16px; padding: 24px; text-align: center; cursor: pointer;">
+                    <div style="font-size: 40px; margin-bottom: 8px;">⚠️</div>
+                    <div style="font-weight: bold;">Dirty</div>
+                </div>
+                <div onclick="submitReport('broken')" style="background: rgba(255,255,255,0.5); border-radius: 16px; padding: 24px; text-align: center; cursor: pointer;">
+                    <div style="font-size: 40px; margin-bottom: 8px;">🚫</div>
+                    <div style="font-weight: bold;">Out of Order</div>
+                </div>
+                <div onclick="submitReport('no-paper')" style="background: rgba(255,255,255,0.5); border-radius: 16px; padding: 24px; text-align: center; cursor: pointer;">
+                    <div style="font-size: 40px; margin-bottom: 8px;">🧻</div>
+                    <div style="font-weight: bold;">No Paper</div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // Sample data
         const bathrooms = [
-            { id: 1, name: "Starbucks Coffee", businessType: "Cafe", distance: "0.2 mi", hours: "6:00 AM - 9:00 PM", parking: "Easy", x: "30%", y: "25%" },
-            { id: 2, name: "Central Park", businessType: "Public Park", distance: "0.4 mi", hours: "24 hours", parking: "Moderate", x: "60%", y: "40%" },
-            { id: 3, name: "McDonald's", businessType: "Fast Food", distance: "0.5 mi", hours: "5:00 AM - 11:00 PM", parking: "Easy", x: "45%", y: "65%" },
-            { id: 4, name: "City Library", businessType: "Library", distance: "0.7 mi", hours: "9:00 AM - 8:00 PM", parking: "Difficult", x: "70%", y: "30%" },
-            { id: 5, name: "Gas Station", businessType: "Service Station", distance: "0.8 mi", hours: "24 hours", parking: "Easy", x: "25%", y: "55%" }
+            { id: 1, name: "Starbucks Coffee", type: "Cafe", distance: "0.2 mi", rating: 4.8, favorite: true, liveReports: 1 },
+            { id: 2, name: "Central Park", type: "Public Park", distance: "0.4 mi", rating: 3.5, favorite: false, liveReports: 1 },
+            { id: 3, name: "McDonald's", type: "Fast Food", distance: "0.5 mi", rating: 4.2, favorite: false, liveReports: 0 },
+            { id: 4, name: "City Library", type: "Library", distance: "0.7 mi", rating: 4.6, favorite: false, liveReports: 0 }
         ];
 
-        // State
         let isDarkMode = false;
-        let showingList = false;
+        let emergencyMode = false;
 
-        // Elements
-        const darkModeBtn = document.getElementById('darkModeBtn');
-        const darkModeIcon = document.getElementById('darkModeIcon');
-        const toggleViewBtn = document.getElementById('toggleViewBtn');
-        const viewIcon = document.getElementById('viewIcon');
-        const refreshBtn = document.getElementById('refreshBtn');
-        const locationBtn = document.getElementById('locationBtn');
-        const mapView = document.getElementById('mapView');
-        const listView = document.getElementById('listView');
-        const loading = document.getElementById('loading');
-
-        // Dark mode toggle
-        darkModeBtn.addEventListener('click', () => {
-            isDarkMode = !isDarkMode;
-            document.body.classList.toggle('dark-mode');
-
-            if (isDarkMode) {
-                darkModeBtn.classList.remove('sun');
-                darkModeBtn.classList.add('moon');
-                darkModeIcon.innerHTML = '<path d="M10 7C10 10.866 13.134 14 17 14C18.9584 14 20.729 13.1957 21.9995 11.8995C22 11.933 22 11.9665 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C12.0335 2 12.067 2 12.1005 2.00049C10.8043 3.27098 10 5.04157 10 7ZM4 12C4 16.4183 7.58172 20 12 20C15.0583 20 17.7158 18.2839 19.062 15.7621C18.3945 15.9187 17.7035 16 17 16C12.0294 16 8 11.9706 8 7C8 6.29648 8.08133 5.60547 8.2379 4.938C5.71611 6.28423 4 8.9417 4 12Z"/>';
-            } else {
-                darkModeBtn.classList.remove('moon');
-                darkModeBtn.classList.add('sun');
-                darkModeIcon.innerHTML = '<path d="M12 18C8.68629 18 6 15.3137 6 12C6 8.68629 8.68629 6 12 6C15.3137 6 18 8.68629 18 12C18 15.3137 15.3137 18 12 18ZM12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16ZM11 1H13V4H11V1ZM11 20H13V23H11V20ZM3.51472 4.92893L4.92893 3.51472L7.05025 5.63604L5.63604 7.05025L3.51472 4.92893ZM16.9497 18.364L18.364 16.9497L20.4853 19.0711L19.0711 20.4853L16.9497 18.364ZM19.0711 3.51472L20.4853 4.92893L18.364 7.05025L16.9497 5.63604L19.0711 3.51472ZM5.63604 16.9497L7.05025 18.364L4.92893 20.4853L3.51472 19.0711L5.63604 16.9497ZM23 11V13H20V11H23ZM4 11V13H1V11H4Z"/>';
-            }
-        });
-
-        // Toggle view
-        toggleViewBtn.addEventListener('click', () => {
-            showingList = !showingList;
-            if (showingList) {
-                mapView.style.display = 'none';
-                listView.classList.add('active');
-                viewIcon.innerHTML = '<path d="M2 11.5a8.5 8.5 0 1 1 17 0 8.5 8.5 0 0 1-17 0zm8.5-9.5a9.5 9.5 0 1 0 0 19 9.5 9.5 0 0 0 0-19zm-1.5 9h1.5v.5a1.5 1.5 0 1 0 1.5 1.5v-1a2.5 2.5 0 1 1-3-2.45V8.5a.5.5 0 1 1 1 0V11z"/>';
-            } else {
-                mapView.style.display = 'flex';
-                listView.classList.remove('active');
-                viewIcon.innerHTML = '<path d="M8 4h13v2H8V4zm-5-.5h3v3H3v-3zm0 7h3v3H3v-3zm0 7h3v3H3v-3zM8 11h13v2H8v-2zm0 7h13v2H8v-2z"/>';
-            }
-        });
-
-        // Refresh & location
-        refreshBtn.addEventListener('click', () => {
-            loading.classList.add('active');
-            setTimeout(() => loading.classList.remove('active'), 1500);
-        });
-
-        locationBtn.addEventListener('click', () => {
-            loading.classList.add('active');
-            setTimeout(() => loading.classList.remove('active'), 1000);
-        });
-
-        // Generate markers
-        function generateMapMarkers() {
-            bathrooms.forEach((bathroom, index) => {
-                setTimeout(() => {
-                    const marker = document.createElement('div');
-                    marker.className = 'map-marker';
-                    marker.style.left = bathroom.x;
-                    marker.style.top = bathroom.y;
-                    marker.innerHTML = `
-                        <div class="marker-pin">💧</div>
-                        <div class="marker-label">${bathroom.name}</div>
-                    `;
-                    mapView.appendChild(marker);
-                }, index * 150);
-            });
-        }
-
-        // Generate cards
-        function generateListCards() {
-            bathrooms.forEach(bathroom => {
+        function renderBathrooms() {
+            const content = document.getElementById('content');
+            content.innerHTML = '';
+            bathrooms.forEach(b => {
                 const card = document.createElement('div');
                 card.className = 'bathroom-card';
+                card.onclick = () => openDetail(b);
+                const stars = '⭐'.repeat(Math.floor(b.rating));
+                const fav = b.favorite ? '<span style="position: absolute; top: -4px; right: -4px;">⭐</span>' : '';
+                const report = b.liveReports > 0 ? `<div class="live-report">🔴 ${b.liveReports} live report • ✨ Clean</div>` : '';
                 card.innerHTML = `
-                    <div class="card-header">
-                        <div class="card-icon">💧</div>
-                        <div class="card-info">
-                            <div class="card-title">${bathroom.name}</div>
-                            <div class="card-subtitle">${bathroom.businessType}</div>
+                    <div style="display: flex; align-items: center; margin-bottom: 14px;">
+                        <div class="card-icon">💧${fav}</div>
+                        <div style="flex: 1; margin-left: 14px;">
+                            <div style="font-size: 18px; font-weight: 600;">${b.name}</div>
+                            <div style="font-size: 14px; color: #666;">${b.type}</div>
+                            <div style="font-size: 12px;">${stars} ${b.rating}</div>
                         </div>
-                        <div class="card-distance">${bathroom.distance}</div>
+                        <div style="font-size: 16px; font-weight: bold; color: #007AFF;">${b.distance}</div>
                     </div>
-                    <div class="card-divider"></div>
-                    <div class="card-details">
-                        <div class="detail-item">
-                            <svg viewBox="0 0 24 24"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm1-8h4v2h-6V7h2v5z"/></svg>
-                            <span>${bathroom.hours}</span>
-                        </div>
-                        <div class="detail-item">
-                            <svg viewBox="0 0 24 24"><path d="M19 20H5v-9.5l7-5 7 5V20zm-8-9a1 1 0 1 0 2 0 1 1 0 0 0-2 0zm1 3a3 3 0 1 1 0-6 3 3 0 0 1 0 6zM1 22h22v2H1v-2z"/></svg>
-                            <span>${bathroom.parking}</span>
-                        </div>
-                    </div>
+                    ${report}
+                    <div style="height: 1px; background: rgba(0,0,0,0.1); margin: 12px 0;"></div>
+                    <div style="font-size: 13px; color: #666;">🕐 6 AM - 9 PM  •  🚗 Easy  •  ♿ Accessible</div>
                 `;
-                listView.appendChild(card);
+                content.appendChild(card);
             });
         }
 
-        // Init
-        setTimeout(() => {
-            generateMapMarkers();
-            generateListCards();
-        }, 500);
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark-mode');
+            document.getElementById('darkModeIcon').textContent = isDarkMode ? '🌙' : '☀️';
+        }
 
-        loading.classList.add('active');
-        setTimeout(() => loading.classList.remove('active'), 1500);
+        function toggleEmergency() {
+            emergencyMode = !emergencyMode;
+            document.getElementById('emergencyBtn').classList.toggle('active');
+            document.getElementById('emergencyBanner').classList.toggle('active');
+        }
+
+        function toggleView() {
+            const icon = document.getElementById('viewIcon');
+            icon.textContent = icon.textContent === '📋' ? '🗺️' : '📋';
+        }
+
+        function refresh() { renderBathrooms(); }
+        function openProfile() { document.getElementById('profileModal').classList.add('active'); }
+        function closeProfile() { document.getElementById('profileModal').classList.remove('active'); }
+        function openFilters() { alert('Filters: ♿ Wheelchair, 🚼 Baby Changing, ⭐ Ratings, etc.'); }
+        function openDetail(b) {
+            document.getElementById('detailName').textContent = b.name;
+            document.getElementById('detailModal').classList.add('active');
+        }
+        function closeDetail() { document.getElementById('detailModal').classList.remove('active'); }
+        function openReports() { document.getElementById('reportModal').classList.add('active'); }
+        function closeReports() { document.getElementById('reportModal').classList.remove('active'); }
+        function submitReport(type) {
+            alert(`Report submitted: ${type}\n\n+10 points earned! 🎉`);
+            closeReports();
+            closeDetail();
+        }
+
+        renderBathrooms();
     </script>
 </body>
 </html>
