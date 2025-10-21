@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Loo - Bathroom Finder Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            background: linear-gradient(180deg, #e5eaf0 0%, #d9dde5 100%);
+            transition: background 0.3s ease;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(180deg, #1a1a1e 0%, #26262b 100%);
+        }
+
+        .app-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            max-width: 430px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(180deg, #f2f2f7 0%, #e0e0e5 100%);
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 10;
+            transition: background 0.3s ease;
+        }
+
+        body.dark-mode .header {
+            background: linear-gradient(180deg, #333336 0%, #26262b 100%);
+        }
+
+        .app-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #333344;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+
+        body.dark-mode .app-title {
+            color: #ffffff;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.1);
+        }
+
+        /* Skeuomorphic Button */
+        .btn {
+            width: 55px;
+            height: 55px;
+            border-radius: 12px;
+            background: linear-gradient(180deg, #f2f2f7 0%, #e0e0e5 100%);
+            border: 1px solid rgba(255,255,255,0.8);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            position: relative;
+        }
+
+        body.dark-mode .btn {
+            background: linear-gradient(180deg, #3f3f44 0%, #333336 100%);
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.6);
+        }
+
+        .btn svg {
+            width: 24px;
+            height: 24px;
+            fill: #4c4c55;
+            transition: fill 0.3s ease;
+        }
+
+        body.dark-mode .btn svg {
+            fill: #ffffff;
+        }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Map View */
+        .map-view {
+            background: linear-gradient(135deg, #a8d5ba 0%, #89b4a6 100%);
+            border-radius: 15px;
+            height: 100%;
+            position: relative;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.3);
+            border: 1px solid rgba(0,0,0,0.2);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .map-marker {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: dropIn 0.4s ease-out;
+        }
+
+        @keyframes dropIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .marker-pin {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(180deg, rgba(0,122,255,0.9) 0%, rgba(0,100,220,0.7) 100%);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .marker-label {
+            background: rgba(255,255,255,0.95);
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 500;
+            margin-top: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            white-space: nowrap;
+        }
+
+        body.dark-mode .marker-label {
+            background: rgba(0,0,0,0.8);
+            color: white;
+        }
+
+        /* List View */
+        .list-view {
+            display: none;
+        }
+
+        .list-view.active {
+            display: block;
+        }
+
+        .bathroom-card {
+            background: linear-gradient(180deg, #ffffff 0%, #f7f7f9 100%);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.9);
+            border: 1px solid rgba(255,255,255,0.8);
+            transition: background 0.3s ease;
+        }
+
+        body.dark-mode .bathroom-card {
+            background: linear-gradient(180deg, #333336 0%, #2d2d30 100%);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(0,122,255,0.8) 0%, rgba(0,100,220,0.6) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            font-size: 24px;
+        }
+
+        .card-info {
+            flex: 1;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333344;
+            margin-bottom: 4px;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode .card-title {
+            color: #ffffff;
+        }
+
+        .card-subtitle {
+            font-size: 14px;
+            color: #666677;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode .card-subtitle {
+            color: #999999;
+        }
+
+        .card-distance {
+            font-size: 16px;
+            font-weight: 600;
+            color: #007AFF;
+        }
+
+        .card-divider {
+            height: 1px;
+            background: rgba(0,0,0,0.1);
+            margin: 12px 0;
+        }
+
+        body.dark-mode .card-divider {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .card-details {
+            display: flex;
+            gap: 20px;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #666677;
+        }
+
+        body.dark-mode .detail-item {
+            color: #999999;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            padding: 20px;
+            background: linear-gradient(180deg, #f2f2f7 0%, #e0e0e5 100%);
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
+
+        body.dark-mode .control-panel {
+            background: linear-gradient(180deg, #333336 0%, #26262b 100%);
+        }
+
+        .btn-wide {
+            width: 120px;
+        }
+
+        /* Loading */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,255,255,0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            text-align: center;
+            display: none;
+        }
+
+        body.dark-mode .loading {
+            background: rgba(0,0,0,0.8);
+            color: white;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0,122,255,0.2);
+            border-top-color: #007AFF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .map-placeholder-text {
+            font-size: 16px;
+            color: rgba(255,255,255,0.9);
+            text-align: center;
+            padding: 20px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            max-width: 80%;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="app-title">Loo</div>
+            <button class="btn" id="darkModeBtn" aria-label="Toggle dark mode">
+                <svg id="darkModeIcon" viewBox="0 0 24 24">
+                    <path d="M12 18C8.68629 18 6 15.3137 6 12C6 8.68629 8.68629 6 12 6C15.3137 6 18 8.68629 18 12C18 15.3137 15.3137 18 12 18ZM12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16ZM11 1H13V4H11V1ZM11 20H13V23H11V20ZM3.51472 4.92893L4.92893 3.51472L7.05025 5.63604L5.63604 7.05025L3.51472 4.92893ZM16.9497 18.364L18.364 16.9497L20.4853 19.0711L19.0711 20.4853L16.9497 18.364ZM19.0711 3.51472L20.4853 4.92893L18.364 7.05025L16.9497 5.63604L19.0711 3.51472ZM5.63604 16.9497L7.05025 18.364L4.92893 20.4853L3.51472 19.0711L5.63604 16.9497ZM23 11V13H20V11H23ZM4 11V13H1V11H4Z"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content">
+            <!-- Map View -->
+            <div class="map-view" id="mapView">
+                <div class="map-placeholder-text">
+                    🗺️ Interactive map with bathroom locations<br><br>
+                    In the real app, this uses MapKit to display your location and nearby bathrooms
+                </div>
+                <!-- Markers will be added here dynamically -->
+            </div>
+
+            <!-- List View -->
+            <div class="list-view" id="listView">
+                <!-- Cards will be generated here -->
+            </div>
+
+            <!-- Loading Indicator -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <div class="loading-text">Searching...</div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <button class="btn" id="refreshBtn" aria-label="Refresh">
+                <svg viewBox="0 0 24 24">
+                    <path d="M5.463 4.433A9.961 9.961 0 0 1 12 2c5.523 0 10 4.477 10 10 0 2.136-.67 4.116-1.81 5.74L17 12h3A8 8 0 0 0 6.46 6.228l-.997-1.795zm13.074 15.134A9.961 9.961 0 0 1 12 22C6.477 22 2 17.523 2 12c0-2.136.67-4.116 1.81-5.74L7 12H4a8 8 0 0 0 13.54 5.772l.997 1.795z"/>
+                </svg>
+            </button>
+            <button class="btn btn-wide" id="toggleViewBtn" aria-label="Toggle view">
+                <svg id="viewIcon" viewBox="0 0 24 24">
+                    <path d="M8 4h13v2H8V4zm-5-.5h3v3H3v-3zm0 7h3v3H3v-3zm0 7h3v3H3v-3zM8 11h13v2H8v-2zm0 7h13v2H8v-2z"/>
+                </svg>
+            </button>
+            <button class="btn" id="locationBtn" aria-label="My location">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 20.9l4.95-4.95a7 7 0 1 0-9.9 0L12 20.9zm0 2.828l-6.364-6.364a9 9 0 1 1 12.728 0L12 23.728zM12 13a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 2a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Sample bathroom data
+        const bathrooms = [
+            {
+                id: 1,
+                name: "Starbucks Coffee",
+                businessType: "Cafe",
+                distance: "0.2 mi",
+                hours: "6:00 AM - 9:00 PM",
+                parking: "Easy",
+                x: "30%",
+                y: "25%"
+            },
+            {
+                id: 2,
+                name: "Central Park",
+                businessType: "Public Park",
+                distance: "0.4 mi",
+                hours: "24 hours",
+                parking: "Moderate",
+                x: "60%",
+                y: "40%"
+            },
+            {
+                id: 3,
+                name: "McDonald's",
+                businessType: "Fast Food",
+                distance: "0.5 mi",
+                hours: "5:00 AM - 11:00 PM",
+                parking: "Easy",
+                x: "45%",
+                y: "65%"
+            },
+            {
+                id: 4,
+                name: "City Library",
+                businessType: "Library",
+                distance: "0.7 mi",
+                hours: "9:00 AM - 8:00 PM",
+                parking: "Difficult",
+                x: "70%",
+                y: "30%"
+            },
+            {
+                id: 5,
+                name: "Gas Station",
+                businessType: "Service Station",
+                distance: "0.8 mi",
+                hours: "24 hours",
+                parking: "Easy",
+                x: "25%",
+                y: "55%"
+            }
+        ];
+
+        // State
+        let isDarkMode = false;
+        let showingList = false;
+
+        // Elements
+        const darkModeBtn = document.getElementById('darkModeBtn');
+        const darkModeIcon = document.getElementById('darkModeIcon');
+        const toggleViewBtn = document.getElementById('toggleViewBtn');
+        const viewIcon = document.getElementById('viewIcon');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const locationBtn = document.getElementById('locationBtn');
+        const mapView = document.getElementById('mapView');
+        const listView = document.getElementById('listView');
+        const loading = document.getElementById('loading');
+
+        // Dark mode toggle
+        darkModeBtn.addEventListener('click', () => {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark-mode');
+
+            // Update icon
+            darkModeIcon.innerHTML = isDarkMode
+                ? '<path d="M10 7C10 10.866 13.134 14 17 14C18.9584 14 20.729 13.1957 21.9995 11.8995C22 11.933 22 11.9665 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C12.0335 2 12.067 2 12.1005 2.00049C10.8043 3.27098 10 5.04157 10 7ZM4 12C4 16.4183 7.58172 20 12 20C15.0583 20 17.7158 18.2839 19.062 15.7621C18.3945 15.9187 17.7035 16 17 16C12.0294 16 8 11.9706 8 7C8 6.29648 8.08133 5.60547 8.2379 4.938C5.71611 6.28423 4 8.9417 4 12Z"/>'
+                : '<path d="M12 18C8.68629 18 6 15.3137 6 12C6 8.68629 8.68629 6 12 6C15.3137 6 18 8.68629 18 12C18 15.3137 15.3137 18 12 18ZM12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16ZM11 1H13V4H11V1ZM11 20H13V23H11V20ZM3.51472 4.92893L4.92893 3.51472L7.05025 5.63604L5.63604 7.05025L3.51472 4.92893ZM16.9497 18.364L18.364 16.9497L20.4853 19.0711L19.0711 20.4853L16.9497 18.364ZM19.0711 3.51472L20.4853 4.92893L18.364 7.05025L16.9497 5.63604L19.0711 3.51472ZM5.63604 16.9497L7.05025 18.364L4.92893 20.4853L3.51472 19.0711L5.63604 16.9497ZM23 11V13H20V11H23ZM4 11V13H1V11H4Z"/>';
+        });
+
+        // Toggle view
+        toggleViewBtn.addEventListener('click', () => {
+            showingList = !showingList;
+
+            if (showingList) {
+                mapView.style.display = 'none';
+                listView.classList.add('active');
+                viewIcon.innerHTML = '<path d="M2 11.5a8.5 8.5 0 1 1 17 0 8.5 8.5 0 0 1-17 0zm8.5-9.5a9.5 9.5 0 1 0 0 19 9.5 9.5 0 0 0 0-19zm-1.5 9h1.5v.5a1.5 1.5 0 1 0 1.5 1.5v-1a2.5 2.5 0 1 1-3-2.45V8.5a.5.5 0 1 1 1 0V11z"/>';
+            } else {
+                mapView.style.display = 'flex';
+                listView.classList.remove('active');
+                viewIcon.innerHTML = '<path d="M8 4h13v2H8V4zm-5-.5h3v3H3v-3zm0 7h3v3H3v-3zm0 7h3v3H3v-3zM8 11h13v2H8v-2zm0 7h13v2H8v-2z"/>';
+            }
+        });
+
+        // Refresh button
+        refreshBtn.addEventListener('click', () => {
+            loading.classList.add('active');
+            setTimeout(() => {
+                loading.classList.remove('active');
+            }, 1500);
+        });
+
+        // Location button
+        locationBtn.addEventListener('click', () => {
+            loading.classList.add('active');
+            setTimeout(() => {
+                loading.classList.remove('active');
+            }, 1000);
+        });
+
+        // Generate map markers
+        function generateMapMarkers() {
+            bathrooms.forEach((bathroom, index) => {
+                setTimeout(() => {
+                    const marker = document.createElement('div');
+                    marker.className = 'map-marker';
+                    marker.style.left = bathroom.x;
+                    marker.style.top = bathroom.y;
+                    marker.innerHTML = `
+                        <div class="marker-pin">💧</div>
+                        <div class="marker-label">${bathroom.name}</div>
+                    `;
+                    mapView.appendChild(marker);
+                }, index * 200);
+            });
+        }
+
+        // Generate list cards
+        function generateListCards() {
+            bathrooms.forEach(bathroom => {
+                const card = document.createElement('div');
+                card.className = 'bathroom-card';
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-icon">💧</div>
+                        <div class="card-info">
+                            <div class="card-title">${bathroom.name}</div>
+                            <div class="card-subtitle">${bathroom.businessType}</div>
+                        </div>
+                        <div class="card-distance">${bathroom.distance}</div>
+                    </div>
+                    <div class="card-divider"></div>
+                    <div class="card-details">
+                        <div class="detail-item">
+                            <span>🕐</span>
+                            <span>${bathroom.hours}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span>🚗</span>
+                            <span>${bathroom.parking}</span>
+                        </div>
+                    </div>
+                `;
+                listView.appendChild(card);
+            });
+        }
+
+        // Initialize
+        setTimeout(() => {
+            generateMapMarkers();
+            generateListCards();
+        }, 500);
+
+        // Show initial loading
+        loading.classList.add('active');
+        setTimeout(() => {
+            loading.classList.remove('active');
+        }, 1500);
+    </script>
+</body>
+</html>
