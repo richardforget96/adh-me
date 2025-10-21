@@ -2,7 +2,8 @@
 //  ContentView.swift
 //  Loo
 //
-//  Main view with skeuomorphic design
+//  Main view with Liquid Glass + Skeuomorphic hybrid design
+//  Combining iOS 26 Liquid Glass with tactile skeuomorphism
 //
 
 import SwiftUI
@@ -20,11 +21,11 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            // Background with texture
+            // Dynamic gradient background
             BackgroundView(isDarkMode: isDarkMode)
 
             VStack(spacing: 0) {
-                // Header with skeuomorphic design
+                // Liquid Glass header
                 HeaderView(isDarkMode: $isDarkMode)
 
                 // Map or List View
@@ -34,7 +35,7 @@ struct ContentView: View {
                     MapView(region: $region)
                 }
 
-                // Bottom control panel
+                // Liquid Glass control panel
                 ControlPanelView(showingList: $showingList)
             }
         }
@@ -57,53 +58,94 @@ struct BackgroundView: View {
     let isDarkMode: Bool
 
     var body: some View {
-        LinearGradient(
-            colors: isDarkMode ?
-                [Color(red: 0.1, green: 0.1, blue: 0.12), Color(red: 0.15, green: 0.15, blue: 0.17)] :
-                [Color(red: 0.9, green: 0.92, blue: 0.95), Color(red: 0.85, green: 0.87, blue: 0.9)],
-            startPoint: .top,
-            endPoint: .bottom
-        )
+        ZStack {
+            // Base gradient
+            LinearGradient(
+                colors: isDarkMode ?
+                    [Color(red: 0.05, green: 0.05, blue: 0.08), Color(red: 0.12, green: 0.12, blue: 0.15)] :
+                    [Color(red: 0.88, green: 0.92, blue: 0.98), Color(red: 0.78, green: 0.85, blue: 0.95)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+
+            // Subtle mesh gradient overlay for depth
+            RadialGradient(
+                colors: isDarkMode ?
+                    [Color.blue.opacity(0.15), Color.clear] :
+                    [Color.blue.opacity(0.08), Color.clear],
+                center: .topTrailing,
+                startRadius: 0,
+                endRadius: 500
+            )
+        }
         .ignoresSafeArea()
     }
 }
 
-// MARK: - Header View
+// MARK: - Header View with Liquid Glass
 struct HeaderView: View {
     @Binding var isDarkMode: Bool
 
     var body: some View {
         ZStack {
-            // Skeuomorphic header background
-            LinearGradient(
-                colors: isDarkMode ?
-                    [Color(red: 0.2, green: 0.2, blue: 0.22), Color(red: 0.15, green: 0.15, blue: 0.17)] :
-                    [Color(red: 0.95, green: 0.95, blue: 0.97), Color(red: 0.88, green: 0.88, blue: 0.9)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 2)
+            // Translucent frosted glass background
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    LinearGradient(
+                        colors: isDarkMode ?
+                            [Color.white.opacity(0.05), Color.white.opacity(0.01)] :
+                            [Color.white.opacity(0.4), Color.white.opacity(0.2)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .overlay(
+                    // Top highlight (liquid glass reflection)
+                    LinearGradient(
+                        colors: [Color.white.opacity(isDarkMode ? 0.15 : 0.6), Color.clear],
+                        startPoint: .top,
+                        endPoint: .center
+                    )
+                    .frame(height: 2)
+                    .blur(radius: 1),
+                    alignment: .top
+                )
 
             HStack {
-                // Title with embossed effect
-                Text("Loo")
-                    .font(.system(size: 32, weight: .bold, design: .rounded))
-                    .foregroundColor(isDarkMode ? .white : Color(red: 0.2, green: 0.2, blue: 0.3))
-                    .shadow(color: isDarkMode ?
-                        Color.white.opacity(0.1) :
-                        Color.white.opacity(0.8),
-                        radius: 1, x: 0, y: 1
-                    )
-                    .padding(.leading, 20)
+                // Title with liquid effect
+                HStack(spacing: 8) {
+                    Text("💧")
+                        .font(.system(size: 28))
+
+                    Text("Loo")
+                        .font(.system(size: 32, weight: .bold, design: .rounded))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: isDarkMode ?
+                                    [.white, Color(red: 0.8, green: 0.9, blue: 1.0)] :
+                                    [Color(red: 0.1, green: 0.2, blue: 0.4), Color(red: 0.2, green: 0.4, blue: 0.6)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .shadow(color: isDarkMode ?
+                            Color.white.opacity(0.2) :
+                            Color.white.opacity(0.8),
+                            radius: 2, x: 0, y: 1
+                        )
+                }
+                .padding(.leading, 20)
 
                 Spacer()
 
-                // Dark mode toggle button
-                SkeuomorphicButton(
+                // Liquid Glass dark mode toggle
+                LiquidGlassButton(
                     icon: isDarkMode ? "moon.fill" : "sun.max.fill",
-                    isDarkMode: isDarkMode
+                    isDarkMode: isDarkMode,
+                    accentColor: isDarkMode ? .purple : .orange
                 ) {
-                    withAnimation(.easeInOut(duration: 0.3)) {
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
                         isDarkMode.toggle()
                     }
                 }
@@ -126,12 +168,19 @@ struct MapView: View {
                     BathroomMapMarker(bathroom: bathroom)
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 15))
+            .clipShape(RoundedRectangle(cornerRadius: 24))
             .overlay(
-                RoundedRectangle(cornerRadius: 15)
-                    .strokeBorder(Color.black.opacity(0.2), lineWidth: 1)
+                RoundedRectangle(cornerRadius: 24)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [Color.white.opacity(0.3), Color.clear],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1.5
+                    )
             )
-            .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 3)
+            .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
             .padding()
 
             if bathroomService.isLoading {
@@ -149,32 +198,58 @@ struct BathroomMapMarker: View {
     var body: some View {
         VStack(spacing: 2) {
             ZStack {
+                // Liquid glass droplet
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [Color.blue.opacity(0.8), Color.blue.opacity(0.6)],
-                            startPoint: .top,
-                            endPoint: .bottom
+                            colors: [
+                                Color.blue.opacity(0.9),
+                                Color.blue.opacity(0.6),
+                                Color.cyan.opacity(0.7)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: 36, height: 36)
-                    .shadow(color: .black.opacity(0.4), radius: 3, x: 0, y: 2)
+                    .frame(width: 40, height: 40)
+                    .overlay(
+                        Circle()
+                            .stroke(Color.white.opacity(0.5), lineWidth: 2)
+                    )
+                    .overlay(
+                        // Specular highlight
+                        Circle()
+                            .fill(
+                                RadialGradient(
+                                    colors: [Color.white.opacity(0.8), Color.clear],
+                                    center: .topLeading,
+                                    startRadius: 0,
+                                    endRadius: 20
+                                )
+                            )
+                            .frame(width: 20, height: 20)
+                            .offset(x: -8, y: -8)
+                    )
+                    .shadow(color: .blue.opacity(0.4), radius: 8, x: 0, y: 4)
 
                 Image(systemName: "drop.fill")
                     .foregroundColor(.white)
                     .font(.system(size: 18))
             }
 
+            // Label with frosted glass
             Text(bathroom.name)
-                .font(.system(size: 10, weight: .medium))
+                .font(.system(size: 10, weight: .semibold))
                 .foregroundColor(isDarkMode ? .white : .black)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 3)
-                .background(
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(.ultraThinMaterial)
+                .clipShape(Capsule())
+                .overlay(
                     Capsule()
-                        .fill(isDarkMode ? Color.black.opacity(0.7) : Color.white.opacity(0.9))
-                        .shadow(radius: 2)
+                        .stroke(Color.white.opacity(0.3), lineWidth: 0.5)
                 )
+                .shadow(radius: 3)
         }
     }
 }
@@ -182,13 +257,12 @@ struct BathroomMapMarker: View {
 // MARK: - Bathroom List View
 struct BathroomListView: View {
     @EnvironmentObject var bathroomService: BathroomService
-    @AppStorage("isDarkMode") private var isDarkMode = false
 
     var body: some View {
         ScrollView {
-            LazyVStack(spacing: 12) {
+            LazyVStack(spacing: 16) {
                 ForEach(bathroomService.bathrooms) { bathroom in
-                    BathroomCard(bathroom: bathroom)
+                    LiquidGlassCard(bathroom: bathroom)
                 }
             }
             .padding()
@@ -196,95 +270,119 @@ struct BathroomListView: View {
     }
 }
 
-// MARK: - Bathroom Card
-struct BathroomCard: View {
+// MARK: - Liquid Glass Card
+struct LiquidGlassCard: View {
     let bathroom: Bathroom
     @AppStorage("isDarkMode") private var isDarkMode = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                // Icon
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(spacing: 14) {
+                // Icon with liquid glass effect
                 ZStack {
                     Circle()
                         .fill(
                             LinearGradient(
-                                colors: [Color.blue.opacity(0.7), Color.blue.opacity(0.5)],
+                                colors: [
+                                    Color.blue.opacity(0.8),
+                                    Color.blue.opacity(0.5),
+                                    Color.cyan.opacity(0.6)
+                                ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
                         )
-                        .frame(width: 50, height: 50)
-                        .shadow(color: .black.opacity(0.3), radius: 3, x: 0, y: 2)
+                        .frame(width: 56, height: 56)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.white.opacity(0.4), lineWidth: 1.5)
+                        )
+                        .overlay(
+                            // Liquid reflection
+                            Circle()
+                                .fill(
+                                    RadialGradient(
+                                        colors: [Color.white.opacity(0.7), Color.clear],
+                                        center: .topLeading,
+                                        startRadius: 0,
+                                        endRadius: 28
+                                    )
+                                )
+                                .frame(width: 30, height: 30)
+                                .offset(x: -10, y: -10)
+                        )
+                        .shadow(color: .blue.opacity(0.3), radius: 8, x: 0, y: 4)
 
                     Image(systemName: "drop.fill")
                         .foregroundColor(.white)
-                        .font(.system(size: 24))
+                        .font(.system(size: 26))
                 }
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 5) {
                     Text(bathroom.name)
                         .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(isDarkMode ? .white : Color(red: 0.2, green: 0.2, blue: 0.3))
+                        .foregroundColor(isDarkMode ? .white : Color(red: 0.15, green: 0.15, blue: 0.25))
 
                     Text(bathroom.businessType)
-                        .font(.system(size: 14))
-                        .foregroundColor(isDarkMode ? Color.gray : Color(red: 0.4, green: 0.4, blue: 0.5))
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(isDarkMode ? Color.gray : Color(red: 0.45, green: 0.45, blue: 0.55))
                 }
 
                 Spacer()
 
                 if let distance = bathroom.distance {
                     Text(formatDistance(distance))
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(.blue)
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Color.blue, Color.cyan],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
                 }
             }
 
-            Divider()
-                .background(isDarkMode ? Color.gray.opacity(0.3) : Color.gray.opacity(0.2))
+            // Frosted divider
+            Rectangle()
+                .fill(Color.white.opacity(isDarkMode ? 0.1 : 0.3))
+                .frame(height: 1)
 
             // Details
-            HStack(spacing: 20) {
-                DetailItem(
-                    icon: "clock.fill",
-                    text: bathroom.openingHours ?? "Hours N/A",
-                    isDarkMode: isDarkMode
-                )
-
-                DetailItem(
-                    icon: "car.fill",
-                    text: bathroom.parkingEase.rawValue,
-                    isDarkMode: isDarkMode
-                )
+            HStack(spacing: 24) {
+                LiquidDetailItem(icon: "clock.fill", text: bathroom.openingHours ?? "Hours N/A")
+                LiquidDetailItem(icon: "car.fill", text: bathroom.parkingEase.rawValue)
             }
         }
-        .padding(16)
+        .padding(18)
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(
-                    LinearGradient(
-                        colors: isDarkMode ?
-                            [Color(red: 0.2, green: 0.2, blue: 0.22), Color(red: 0.18, green: 0.18, blue: 0.2)] :
-                            [Color.white, Color(red: 0.97, green: 0.97, blue: 0.98)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
+            // Liquid Glass card background
+            RoundedRectangle(cornerRadius: 20)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(
+                            LinearGradient(
+                                colors: isDarkMode ?
+                                    [Color.white.opacity(0.08), Color.white.opacity(0.02)] :
+                                    [Color.white.opacity(0.6), Color.white.opacity(0.3)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
                 )
-                .shadow(color: .black.opacity(isDarkMode ? 0.5 : 0.15), radius: 5, x: 0, y: 3)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .strokeBorder(
-                    LinearGradient(
-                        colors: isDarkMode ?
-                            [Color.white.opacity(0.1), Color.clear] :
-                            [Color.white, Color.clear],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    ),
-                    lineWidth: 1
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .strokeBorder(
+                            LinearGradient(
+                                colors: [Color.white.opacity(0.5), Color.white.opacity(0.1)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1.5
+                        )
                 )
+                .shadow(color: isDarkMode ? Color.black.opacity(0.4) : Color.black.opacity(0.1), radius: 15, x: 0, y: 8)
         )
     }
 
@@ -298,26 +396,26 @@ struct BathroomCard: View {
     }
 }
 
-// MARK: - Detail Item
-struct DetailItem: View {
+// MARK: - Liquid Detail Item
+struct LiquidDetailItem: View {
     let icon: String
     let text: String
-    let isDarkMode: Bool
+    @AppStorage("isDarkMode") private var isDarkMode = false
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 7) {
             Image(systemName: icon)
-                .font(.system(size: 12))
-                .foregroundColor(isDarkMode ? Color.gray : Color(red: 0.5, green: 0.5, blue: 0.6))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(isDarkMode ? Color(red: 0.7, green: 0.8, blue: 1.0) : Color(red: 0.3, green: 0.5, blue: 0.7))
 
             Text(text)
-                .font(.system(size: 12))
-                .foregroundColor(isDarkMode ? Color.gray : Color(red: 0.5, green: 0.5, blue: 0.6))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(isDarkMode ? Color.gray : Color(red: 0.4, green: 0.4, blue: 0.5))
         }
     }
 }
 
-// MARK: - Control Panel
+// MARK: - Control Panel with Liquid Glass
 struct ControlPanelView: View {
     @Binding var showingList: Bool
     @EnvironmentObject var locationManager: LocationManager
@@ -325,9 +423,9 @@ struct ControlPanelView: View {
     @AppStorage("isDarkMode") private var isDarkMode = false
 
     var body: some View {
-        HStack(spacing: 20) {
-            // Refresh button
-            SkeuomorphicButton(icon: "arrow.clockwise", isDarkMode: isDarkMode) {
+        HStack(spacing: 16) {
+            // Refresh
+            LiquidGlassButton(icon: "arrow.clockwise", isDarkMode: isDarkMode, accentColor: .blue) {
                 if let location = locationManager.location {
                     Task {
                         await bathroomService.fetchBathrooms(near: location)
@@ -335,109 +433,140 @@ struct ControlPanelView: View {
                 }
             }
 
-            // Toggle view button
-            SkeuomorphicButton(
+            // Toggle view (wider)
+            LiquidGlassButton(
                 icon: showingList ? "map.fill" : "list.bullet",
                 isDarkMode: isDarkMode,
+                accentColor: .cyan,
                 isWide: true
             ) {
-                withAnimation {
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
                     showingList.toggle()
                 }
             }
 
-            // Location button
-            SkeuomorphicButton(icon: "location.fill", isDarkMode: isDarkMode) {
+            // Location
+            LiquidGlassButton(icon: "location.fill", isDarkMode: isDarkMode, accentColor: .green) {
                 locationManager.startUpdating()
             }
         }
-        .padding()
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
         .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(
+            // Frosted glass panel
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .overlay(
                     LinearGradient(
                         colors: isDarkMode ?
-                            [Color(red: 0.2, green: 0.2, blue: 0.22), Color(red: 0.15, green: 0.15, blue: 0.17)] :
-                            [Color(red: 0.95, green: 0.95, blue: 0.97), Color(red: 0.88, green: 0.88, blue: 0.9)],
+                            [Color.white.opacity(0.08), Color.white.opacity(0.02)] :
+                            [Color.white.opacity(0.5), Color.white.opacity(0.2)],
                         startPoint: .top,
                         endPoint: .bottom
                     )
                 )
-                .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: -2)
+                .overlay(
+                    // Top reflection line
+                    Rectangle()
+                        .fill(Color.white.opacity(isDarkMode ? 0.2 : 0.6))
+                        .frame(height: 1)
+                        .blur(radius: 0.5),
+                    alignment: .top
+                )
+                .shadow(color: .black.opacity(0.15), radius: 20, x: 0, y: -5)
         )
-        .padding()
     }
 }
 
-// MARK: - Skeuomorphic Button
-struct SkeuomorphicButton: View {
+// MARK: - Liquid Glass Button
+struct LiquidGlassButton: View {
     let icon: String
     let isDarkMode: Bool
+    var accentColor: Color = .blue
     var isWide: Bool = false
     let action: () -> Void
 
     @State private var isPressed = false
 
     var body: some View {
-        Button(action: {
-            action()
-        }) {
+        Button(action: action) {
             ZStack {
-                // Button background with depth
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(
-                        LinearGradient(
-                            colors: isPressed ?
-                                (isDarkMode ?
-                                    [Color(red: 0.15, green: 0.15, blue: 0.17), Color(red: 0.2, green: 0.2, blue: 0.22)] :
-                                    [Color(red: 0.82, green: 0.82, blue: 0.84), Color(red: 0.88, green: 0.88, blue: 0.9)]) :
-                                (isDarkMode ?
-                                    [Color(red: 0.25, green: 0.25, blue: 0.27), Color(red: 0.2, green: 0.2, blue: 0.22)] :
-                                    [Color(red: 0.95, green: 0.95, blue: 0.97), Color(red: 0.88, green: 0.88, blue: 0.9)]),
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
+                // Liquid Glass button
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(.ultraThinMaterial)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .strokeBorder(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(
                                 LinearGradient(
-                                    colors: isDarkMode ?
-                                        [Color.white.opacity(0.15), Color.clear] :
-                                        [Color.white, Color.clear],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                ),
-                                lineWidth: 1
+                                    colors: isPressed ?
+                                        [accentColor.opacity(0.3), accentColor.opacity(0.1)] :
+                                        (isDarkMode ?
+                                            [Color.white.opacity(0.12), Color.white.opacity(0.05)] :
+                                            [Color.white.opacity(0.7), Color.white.opacity(0.4)]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
                             )
                     )
-                    .shadow(
-                        color: .black.opacity(isPressed ? 0.2 : 0.4),
-                        radius: isPressed ? 2 : 4,
-                        x: 0,
-                        y: isPressed ? 1 : 3
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .strokeBorder(
+                                LinearGradient(
+                                    colors: [Color.white.opacity(0.6), Color.white.opacity(0.1)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 1.5
+                            )
                     )
+                    .overlay(
+                        // Specular highlight
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color.white.opacity(0.4), Color.clear],
+                                    startPoint: .top,
+                                    endPoint: .center
+                                )
+                            )
+                            .frame(height: 20)
+                            .blur(radius: 2),
+                        alignment: .top
+                    )
+                    .shadow(color: isPressed ? Color.black.opacity(0.2) : accentColor.opacity(0.3),
+                            radius: isPressed ? 5 : 10,
+                            x: 0,
+                            y: isPressed ? 2 : 5)
 
                 Image(systemName: icon)
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundColor(isDarkMode ? .white : Color(red: 0.3, green: 0.3, blue: 0.4))
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: isDarkMode ?
+                                [.white, Color(red: 0.9, green: 0.95, blue: 1.0)] :
+                                [accentColor, accentColor.opacity(0.7)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
             }
-            .frame(width: isWide ? 120 : 55, height: 55)
+            .frame(width: isWide ? 140 : 60, height: 60)
+            .scaleEffect(isPressed ? 0.94 : 1.0)
         }
-        .buttonStyle(PressButtonStyle(isPressed: $isPressed))
-    }
-}
-
-// MARK: - Press Button Style
-struct PressButtonStyle: ButtonStyle {
-    @Binding var isPressed: Bool
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
-            .onChange(of: configuration.isPressed) { _, newValue in
-                isPressed = newValue
-            }
+        .buttonStyle(PlainButtonStyle())
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in
+                    withAnimation(.easeOut(duration: 0.1)) {
+                        isPressed = true
+                    }
+                }
+                .onEnded { _ in
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                        isPressed = false
+                    }
+                }
+        )
     }
 }
 
@@ -447,18 +576,34 @@ struct LoadingView: View {
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 15)
-                .fill(isDarkMode ? Color.black.opacity(0.7) : Color.white.opacity(0.9))
-                .frame(width: 120, height: 120)
-                .shadow(radius: 10)
+            RoundedRectangle(cornerRadius: 24)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24)
+                        .fill(
+                            LinearGradient(
+                                colors: isDarkMode ?
+                                    [Color.white.opacity(0.1), Color.white.opacity(0.02)] :
+                                    [Color.white.opacity(0.6), Color.white.opacity(0.3)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24)
+                        .strokeBorder(Color.white.opacity(0.3), lineWidth: 1.5)
+                )
+                .frame(width: 140, height: 140)
+                .shadow(color: .black.opacity(0.3), radius: 20, x: 0, y: 10)
 
-            VStack(spacing: 12) {
+            VStack(spacing: 14) {
                 ProgressView()
-                    .scaleEffect(1.5)
+                    .scaleEffect(1.6)
                     .tint(.blue)
 
                 Text("Searching...")
-                    .font(.system(size: 14, weight: .medium))
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(isDarkMode ? .white : .black)
             }
         }

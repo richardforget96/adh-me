@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Loo - Bathroom Finder Demo</title>
+    <title>Loo - Liquid Glass Demo</title>
     <style>
         * {
             margin: 0;
@@ -19,12 +19,30 @@
             overflow: hidden;
             height: 100vh;
             width: 100vw;
-            background: linear-gradient(180deg, #e5eaf0 0%, #d9dde5 100%);
-            transition: background 0.3s ease;
+            background: linear-gradient(135deg, #e0ecfa 0%, #c8daf2 100%);
+            position: relative;
+            transition: background 0.4s ease;
+        }
+
+        /* Dynamic background gradient overlay */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(0,122,255,0.12) 0%, transparent 70%);
+            pointer-events: none;
+            transition: opacity 0.4s ease;
         }
 
         body.dark-mode {
-            background: linear-gradient(180deg, #1a1a1e 0%, #26262b 100%);
+            background: linear-gradient(135deg, #0d0d14 0%, #1e1e26 100%);
+        }
+
+        body.dark-mode::before {
+            background: radial-gradient(circle, rgba(100,150,255,0.2) 0%, transparent 70%);
         }
 
         .app-container {
@@ -33,77 +51,184 @@
             flex-direction: column;
             max-width: 430px;
             margin: 0 auto;
+            position: relative;
         }
 
-        /* Header */
+        /* LIQUID GLASS HEADER */
         .header {
-            background: linear-gradient(180deg, #f2f2f7 0%, #e0e0e5 100%);
             height: 80px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
             position: relative;
             z-index: 10;
-            transition: background 0.3s ease;
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            background: linear-gradient(180deg,
+                rgba(255,255,255,0.5) 0%,
+                rgba(255,255,255,0.25) 100%);
+            box-shadow:
+                0 2px 20px rgba(0,0,0,0.1),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+            transition: all 0.4s ease;
         }
 
         body.dark-mode .header {
-            background: linear-gradient(180deg, #333336 0%, #26262b 100%);
+            background: linear-gradient(180deg,
+                rgba(255,255,255,0.08) 0%,
+                rgba(255,255,255,0.02) 100%);
+            box-shadow:
+                0 2px 20px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.15);
+        }
+
+        /* Liquid highlight bar on top */
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg,
+                rgba(255,255,255,0.8) 0%,
+                rgba(255,255,255,0.4) 50%,
+                rgba(255,255,255,0.8) 100%);
+            filter: blur(1px);
+        }
+
+        body.dark-mode .header::before {
+            background: linear-gradient(90deg,
+                rgba(255,255,255,0.2) 0%,
+                rgba(255,255,255,0.1) 50%,
+                rgba(255,255,255,0.2) 100%);
+        }
+
+        .app-title-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .app-icon {
+            font-size: 28px;
         }
 
         .app-title {
             font-size: 32px;
             font-weight: 700;
-            color: #333344;
-            text-shadow: 0 1px 0 rgba(255,255,255,0.8);
-            transition: color 0.3s ease, text-shadow 0.3s ease;
+            background: linear-gradient(135deg, #1a3d66 0%, #2d5a8c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.8);
+            transition: all 0.4s ease;
         }
 
         body.dark-mode .app-title {
-            color: #ffffff;
-            text-shadow: 0 1px 0 rgba(255,255,255,0.1);
+            background: linear-gradient(135deg, #ffffff 0%, #cce5ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.2);
         }
 
-        /* Skeuomorphic Button */
+        /* LIQUID GLASS BUTTON */
         .btn {
-            width: 55px;
-            height: 55px;
-            border-radius: 12px;
-            background: linear-gradient(180deg, #f2f2f7 0%, #e0e0e5 100%);
-            border: 1px solid rgba(255,255,255,0.8);
-            box-shadow: 0 3px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.9);
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            background: linear-gradient(135deg,
+                rgba(255,255,255,0.8) 0%,
+                rgba(255,255,255,0.5) 100%);
+            border: 1.5px solid rgba(255,255,255,0.6);
+            box-shadow:
+                0 8px 16px rgba(0,0,0,0.12),
+                inset 0 1px 0 rgba(255,255,255,0.9);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.1s ease;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
+            overflow: hidden;
         }
 
         body.dark-mode .btn {
-            background: linear-gradient(180deg, #3f3f44 0%, #333336 100%);
-            border: 1px solid rgba(255,255,255,0.15);
+            background: linear-gradient(135deg,
+                rgba(255,255,255,0.15) 0%,
+                rgba(255,255,255,0.08) 100%);
+            border: 1.5px solid rgba(255,255,255,0.2);
+            box-shadow:
+                0 8px 16px rgba(0,0,0,0.4),
+                inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+
+        /* Specular highlight on button */
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(180deg,
+                rgba(255,255,255,0.5) 0%,
+                transparent 100%);
+            border-radius: 16px 16px 0 0;
+            pointer-events: none;
+            filter: blur(2px);
+        }
+
+        body.dark-mode .btn::before {
+            background: linear-gradient(180deg,
+                rgba(255,255,255,0.15) 0%,
+                transparent 100%);
         }
 
         .btn:active {
-            transform: scale(0.95);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.6);
+            transform: scale(0.94);
+            box-shadow:
+                0 4px 8px rgba(0,0,0,0.15),
+                inset 0 1px 0 rgba(255,255,255,0.6);
         }
 
         .btn svg {
             width: 24px;
             height: 24px;
-            fill: #4c4c55;
-            transition: fill 0.3s ease;
+            position: relative;
+            z-index: 1;
+            transition: all 0.4s ease;
         }
 
-        body.dark-mode .btn svg {
-            fill: #ffffff;
+        .btn.sun svg {
+            fill: url(#sunGradient);
         }
 
-        /* Content Area */
+        .btn.moon svg {
+            fill: url(#moonGradient);
+        }
+
+        .btn.accent-blue svg {
+            fill: url(#blueGradient);
+        }
+
+        .btn.accent-cyan svg {
+            fill: url(#cyanGradient);
+        }
+
+        .btn.accent-green svg {
+            fill: url(#greenGradient);
+        }
+
+        .btn-wide {
+            width: 140px;
+        }
+
+        /* CONTENT */
         .content {
             flex: 1;
             padding: 20px;
@@ -111,14 +236,16 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        /* Map View */
+        /* MAP VIEW WITH LIQUID GLASS */
         .map-view {
             background: linear-gradient(135deg, #a8d5ba 0%, #89b4a6 100%);
-            border-radius: 15px;
+            border-radius: 24px;
             height: 100%;
             position: relative;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.3);
-            border: 1px solid rgba(0,0,0,0.2);
+            box-shadow:
+                0 10px 40px rgba(0,0,0,0.15),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+            border: 1.5px solid rgba(255,255,255,0.4);
             overflow: hidden;
             display: flex;
             align-items: center;
@@ -126,55 +253,94 @@
             flex-direction: column;
         }
 
+        /* Liquid glass overlay on map border */
+        .map-view::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 24px;
+            background: linear-gradient(135deg,
+                rgba(255,255,255,0.3) 0%,
+                transparent 50%);
+            pointer-events: none;
+        }
+
         .map-marker {
             position: absolute;
             display: flex;
             flex-direction: column;
             align-items: center;
-            animation: dropIn 0.4s ease-out;
+            animation: dropIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
         }
 
         @keyframes dropIn {
             from {
-                transform: translateY(-20px);
+                transform: translateY(-30px) scale(0.8);
                 opacity: 0;
             }
             to {
-                transform: translateY(0);
+                transform: translateY(0) scale(1);
                 opacity: 1;
             }
         }
 
         .marker-pin {
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: linear-gradient(180deg, rgba(0,122,255,0.9) 0%, rgba(0,100,220,0.7) 100%);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            background: linear-gradient(135deg,
+                rgba(0,122,255,0.95) 0%,
+                rgba(0,100,220,0.7) 50%,
+                rgba(0,200,255,0.8) 100%);
+            border: 2px solid rgba(255,255,255,0.6);
+            box-shadow:
+                0 4px 12px rgba(0,122,255,0.4),
+                inset -4px -4px 8px rgba(0,0,0,0.2);
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-size: 18px;
+            position: relative;
+        }
+
+        /* Specular highlight on marker */
+        .marker-pin::before {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle at center,
+                rgba(255,255,255,0.9) 0%,
+                transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
         }
 
         .marker-label {
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
             background: rgba(255,255,255,0.95);
-            padding: 3px 8px;
+            padding: 4px 10px;
             border-radius: 10px;
             font-size: 10px;
-            font-weight: 500;
-            margin-top: 4px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            font-weight: 600;
+            margin-top: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            border: 0.5px solid rgba(255,255,255,0.5);
             white-space: nowrap;
         }
 
         body.dark-mode .marker-label {
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             color: white;
+            border: 0.5px solid rgba(255,255,255,0.2);
         }
 
-        /* List View */
+        /* LIST VIEW */
         .list-view {
             display: none;
         }
@@ -183,38 +349,93 @@
             display: block;
         }
 
+        /* LIQUID GLASS CARD */
         .bathroom-card {
-            background: linear-gradient(180deg, #ffffff 0%, #f7f7f9 100%);
-            border-radius: 12px;
-            padding: 16px;
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            background: linear-gradient(135deg,
+                rgba(255,255,255,0.7) 0%,
+                rgba(255,255,255,0.4) 100%);
+            border-radius: 20px;
+            padding: 18px;
             margin-bottom: 16px;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.9);
-            border: 1px solid rgba(255,255,255,0.8);
-            transition: background 0.3s ease;
+            box-shadow:
+                0 8px 24px rgba(0,0,0,0.12),
+                inset 0 1px 0 rgba(255,255,255,0.9);
+            border: 1.5px solid rgba(255,255,255,0.6);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
 
         body.dark-mode .bathroom-card {
-            background: linear-gradient(180deg, #333336 0%, #2d2d30 100%);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: linear-gradient(135deg,
+                rgba(255,255,255,0.1) 0%,
+                rgba(255,255,255,0.05) 100%);
+            border: 1.5px solid rgba(255,255,255,0.15);
+            box-shadow:
+                0 8px 24px rgba(0,0,0,0.4),
+                inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+
+        /* Liquid glass highlight */
+        .bathroom-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg,
+                rgba(255,255,255,0.4) 0%,
+                transparent 50%);
+            border-radius: 20px;
+            pointer-events: none;
+        }
+
+        body.dark-mode .bathroom-card::before {
+            background: linear-gradient(135deg,
+                rgba(255,255,255,0.08) 0%,
+                transparent 50%);
         }
 
         .card-header {
             display: flex;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
+            position: relative;
+            z-index: 1;
         }
 
         .card-icon {
-            width: 50px;
-            height: 50px;
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
-            background: linear-gradient(135deg, rgba(0,122,255,0.8) 0%, rgba(0,100,220,0.6) 100%);
+            background: linear-gradient(135deg,
+                rgba(0,122,255,0.9) 0%,
+                rgba(0,100,220,0.6) 50%,
+                rgba(0,200,255,0.7) 100%);
+            border: 1.5px solid rgba(255,255,255,0.5);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 12px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-            font-size: 24px;
+            margin-right: 14px;
+            box-shadow:
+                0 4px 12px rgba(0,122,255,0.35),
+                inset -4px -4px 8px rgba(0,0,0,0.2);
+            font-size: 26px;
+            position: relative;
+        }
+
+        /* Specular highlight on icon */
+        .card-icon::before {
+            content: '';
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            width: 28px;
+            height: 28px;
+            background: radial-gradient(circle at center,
+                rgba(255,255,255,0.8) 0%,
+                transparent 70%);
+            border-radius: 50%;
         }
 
         .card-info {
@@ -224,9 +445,9 @@
         .card-title {
             font-size: 18px;
             font-weight: 600;
-            color: #333344;
-            margin-bottom: 4px;
-            transition: color 0.3s ease;
+            color: #26263a;
+            margin-bottom: 5px;
+            transition: color 0.4s ease;
         }
 
         body.dark-mode .card-title {
@@ -235,8 +456,9 @@
 
         .card-subtitle {
             font-size: 14px;
-            color: #666677;
-            transition: color 0.3s ease;
+            font-weight: 500;
+            color: #73738c;
+            transition: color 0.4s ease;
         }
 
         body.dark-mode .card-subtitle {
@@ -245,30 +467,38 @@
 
         .card-distance {
             font-size: 16px;
-            font-weight: 600;
-            color: #007AFF;
+            font-weight: 700;
+            background: linear-gradient(90deg, #007AFF 0%, #00C8FF 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .card-divider {
             height: 1px;
-            background: rgba(0,0,0,0.1);
-            margin: 12px 0;
+            background: rgba(255,255,255,0.4);
+            margin: 14px 0;
+            position: relative;
+            z-index: 1;
         }
 
         body.dark-mode .card-divider {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.15);
         }
 
         .card-details {
             display: flex;
-            gap: 20px;
+            gap: 24px;
+            position: relative;
+            z-index: 1;
         }
 
         .detail-item {
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 12px;
+            gap: 7px;
+            font-size: 13px;
+            font-weight: 500;
             color: #666677;
         }
 
@@ -276,57 +506,105 @@
             color: #999999;
         }
 
-        /* Control Panel */
+        .detail-item svg {
+            width: 14px;
+            height: 14px;
+            fill: #4d668c;
+        }
+
+        body.dark-mode .detail-item svg {
+            fill: #b3ccff;
+        }
+
+        /* CONTROL PANEL WITH LIQUID GLASS */
         .control-panel {
-            padding: 20px;
-            background: linear-gradient(180deg, #f2f2f7 0%, #e0e0e5 100%);
-            border-radius: 20px 20px 0 0;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+            padding: 16px 20px;
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            background: linear-gradient(180deg,
+                rgba(255,255,255,0.6) 0%,
+                rgba(255,255,255,0.3) 100%);
+            box-shadow:
+                0 -5px 30px rgba(0,0,0,0.1),
+                inset 0 1px 0 rgba(255,255,255,0.8);
             display: flex;
-            gap: 20px;
+            gap: 16px;
             justify-content: center;
-            transition: background 0.3s ease;
+            transition: all 0.4s ease;
+            position: relative;
         }
 
         body.dark-mode .control-panel {
-            background: linear-gradient(180deg, #333336 0%, #26262b 100%);
+            background: linear-gradient(180deg,
+                rgba(255,255,255,0.1) 0%,
+                rgba(255,255,255,0.04) 100%);
+            box-shadow:
+                0 -5px 30px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.15);
         }
 
-        .btn-wide {
-            width: 120px;
+        /* Top liquid highlight */
+        .control-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: rgba(255,255,255,0.8);
+            filter: blur(0.5px);
         }
 
-        /* Loading */
+        body.dark-mode .control-panel::before {
+            background: rgba(255,255,255,0.25);
+        }
+
+        /* LOADING */
         .loading {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(255,255,255,0.95);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            background: linear-gradient(135deg,
+                rgba(255,255,255,0.8) 0%,
+                rgba(255,255,255,0.6) 100%);
+            padding: 32px;
+            border-radius: 24px;
+            box-shadow:
+                0 15px 40px rgba(0,0,0,0.2),
+                inset 0 1px 0 rgba(255,255,255,0.9);
+            border: 1.5px solid rgba(255,255,255,0.6);
             text-align: center;
             display: none;
         }
 
         body.dark-mode .loading {
-            background: rgba(0,0,0,0.8);
-            color: white;
+            background: linear-gradient(135deg,
+                rgba(0,0,0,0.85) 0%,
+                rgba(0,0,0,0.75) 100%);
+            border: 1.5px solid rgba(255,255,255,0.2);
         }
 
         .loading.active {
             display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
         }
 
         .spinner {
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             border: 4px solid rgba(0,122,255,0.2);
             border-top-color: #007AFF;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 12px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 14px;
         }
 
         @keyframes spin {
@@ -334,27 +612,65 @@
         }
 
         .loading-text {
-            font-size: 14px;
-            font-weight: 500;
+            font-size: 15px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        body.dark-mode .loading-text {
+            color: #ffffff;
         }
 
         .map-placeholder-text {
-            font-size: 16px;
-            color: rgba(255,255,255,0.9);
+            font-size: 15px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.95);
             text-align: center;
-            padding: 20px;
-            background: rgba(0,0,0,0.2);
-            border-radius: 10px;
-            max-width: 80%;
+            padding: 24px;
+            backdrop-filter: blur(10px);
+            background: rgba(0,0,0,0.25);
+            border-radius: 16px;
+            max-width: 85%;
+            line-height: 1.6;
+            border: 1px solid rgba(255,255,255,0.2);
         }
     </style>
 </head>
 <body>
+    <!-- SVG Gradients for icons -->
+    <svg width="0" height="0" style="position: absolute;">
+        <defs>
+            <linearGradient id="sunGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#FF9500;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#FF6B00;stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="moonGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#9F7AEA;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#6B46C1;stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#007AFF;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#0051D5;stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="cyanGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#00C8FF;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#007AFF;stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#34C759;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#30A14E;stop-opacity:1" />
+            </linearGradient>
+        </defs>
+    </svg>
+
     <div class="app-container">
-        <!-- Header -->
+        <!-- Liquid Glass Header -->
         <div class="header">
-            <div class="app-title">Loo</div>
-            <button class="btn" id="darkModeBtn" aria-label="Toggle dark mode">
+            <div class="app-title-container">
+                <div class="app-icon">💧</div>
+                <div class="app-title">Loo</div>
+            </div>
+            <button class="btn sun" id="darkModeBtn" aria-label="Toggle dark mode">
                 <svg id="darkModeIcon" viewBox="0 0 24 24">
                     <path d="M12 18C8.68629 18 6 15.3137 6 12C6 8.68629 8.68629 6 12 6C15.3137 6 18 8.68629 18 12C18 15.3137 15.3137 18 12 18ZM12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16ZM11 1H13V4H11V1ZM11 20H13V23H11V20ZM3.51472 4.92893L4.92893 3.51472L7.05025 5.63604L5.63604 7.05025L3.51472 4.92893ZM16.9497 18.364L18.364 16.9497L20.4853 19.0711L19.0711 20.4853L16.9497 18.364ZM19.0711 3.51472L20.4853 4.92893L18.364 7.05025L16.9497 5.63604L19.0711 3.51472ZM5.63604 16.9497L7.05025 18.364L4.92893 20.4853L3.51472 19.0711L5.63604 16.9497ZM23 11V13H20V11H23ZM4 11V13H1V11H4Z"/>
                 </svg>
@@ -367,36 +683,33 @@
             <div class="map-view" id="mapView">
                 <div class="map-placeholder-text">
                     🗺️ Interactive map with bathroom locations<br><br>
-                    In the real app, this uses MapKit to display your location and nearby bathrooms
+                    The real app uses MapKit with live OpenStreetMap data
                 </div>
-                <!-- Markers will be added here dynamically -->
             </div>
 
             <!-- List View -->
-            <div class="list-view" id="listView">
-                <!-- Cards will be generated here -->
-            </div>
+            <div class="list-view" id="listView"></div>
 
-            <!-- Loading Indicator -->
+            <!-- Loading -->
             <div class="loading" id="loading">
                 <div class="spinner"></div>
                 <div class="loading-text">Searching...</div>
             </div>
         </div>
 
-        <!-- Control Panel -->
+        <!-- Liquid Glass Control Panel -->
         <div class="control-panel">
-            <button class="btn" id="refreshBtn" aria-label="Refresh">
+            <button class="btn accent-blue" id="refreshBtn" aria-label="Refresh">
                 <svg viewBox="0 0 24 24">
                     <path d="M5.463 4.433A9.961 9.961 0 0 1 12 2c5.523 0 10 4.477 10 10 0 2.136-.67 4.116-1.81 5.74L17 12h3A8 8 0 0 0 6.46 6.228l-.997-1.795zm13.074 15.134A9.961 9.961 0 0 1 12 22C6.477 22 2 17.523 2 12c0-2.136.67-4.116 1.81-5.74L7 12H4a8 8 0 0 0 13.54 5.772l.997 1.795z"/>
                 </svg>
             </button>
-            <button class="btn btn-wide" id="toggleViewBtn" aria-label="Toggle view">
+            <button class="btn btn-wide accent-cyan" id="toggleViewBtn" aria-label="Toggle view">
                 <svg id="viewIcon" viewBox="0 0 24 24">
                     <path d="M8 4h13v2H8V4zm-5-.5h3v3H3v-3zm0 7h3v3H3v-3zm0 7h3v3H3v-3zM8 11h13v2H8v-2zm0 7h13v2H8v-2z"/>
                 </svg>
             </button>
-            <button class="btn" id="locationBtn" aria-label="My location">
+            <button class="btn accent-green" id="locationBtn" aria-label="My location">
                 <svg viewBox="0 0 24 24">
                     <path d="M12 20.9l4.95-4.95a7 7 0 1 0-9.9 0L12 20.9zm0 2.828l-6.364-6.364a9 9 0 1 1 12.728 0L12 23.728zM12 13a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 2a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/>
                 </svg>
@@ -405,58 +718,13 @@
     </div>
 
     <script>
-        // Sample bathroom data
+        // Sample data
         const bathrooms = [
-            {
-                id: 1,
-                name: "Starbucks Coffee",
-                businessType: "Cafe",
-                distance: "0.2 mi",
-                hours: "6:00 AM - 9:00 PM",
-                parking: "Easy",
-                x: "30%",
-                y: "25%"
-            },
-            {
-                id: 2,
-                name: "Central Park",
-                businessType: "Public Park",
-                distance: "0.4 mi",
-                hours: "24 hours",
-                parking: "Moderate",
-                x: "60%",
-                y: "40%"
-            },
-            {
-                id: 3,
-                name: "McDonald's",
-                businessType: "Fast Food",
-                distance: "0.5 mi",
-                hours: "5:00 AM - 11:00 PM",
-                parking: "Easy",
-                x: "45%",
-                y: "65%"
-            },
-            {
-                id: 4,
-                name: "City Library",
-                businessType: "Library",
-                distance: "0.7 mi",
-                hours: "9:00 AM - 8:00 PM",
-                parking: "Difficult",
-                x: "70%",
-                y: "30%"
-            },
-            {
-                id: 5,
-                name: "Gas Station",
-                businessType: "Service Station",
-                distance: "0.8 mi",
-                hours: "24 hours",
-                parking: "Easy",
-                x: "25%",
-                y: "55%"
-            }
+            { id: 1, name: "Starbucks Coffee", businessType: "Cafe", distance: "0.2 mi", hours: "6:00 AM - 9:00 PM", parking: "Easy", x: "30%", y: "25%" },
+            { id: 2, name: "Central Park", businessType: "Public Park", distance: "0.4 mi", hours: "24 hours", parking: "Moderate", x: "60%", y: "40%" },
+            { id: 3, name: "McDonald's", businessType: "Fast Food", distance: "0.5 mi", hours: "5:00 AM - 11:00 PM", parking: "Easy", x: "45%", y: "65%" },
+            { id: 4, name: "City Library", businessType: "Library", distance: "0.7 mi", hours: "9:00 AM - 8:00 PM", parking: "Difficult", x: "70%", y: "30%" },
+            { id: 5, name: "Gas Station", businessType: "Service Station", distance: "0.8 mi", hours: "24 hours", parking: "Easy", x: "25%", y: "55%" }
         ];
 
         // State
@@ -479,16 +747,20 @@
             isDarkMode = !isDarkMode;
             document.body.classList.toggle('dark-mode');
 
-            // Update icon
-            darkModeIcon.innerHTML = isDarkMode
-                ? '<path d="M10 7C10 10.866 13.134 14 17 14C18.9584 14 20.729 13.1957 21.9995 11.8995C22 11.933 22 11.9665 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C12.0335 2 12.067 2 12.1005 2.00049C10.8043 3.27098 10 5.04157 10 7ZM4 12C4 16.4183 7.58172 20 12 20C15.0583 20 17.7158 18.2839 19.062 15.7621C18.3945 15.9187 17.7035 16 17 16C12.0294 16 8 11.9706 8 7C8 6.29648 8.08133 5.60547 8.2379 4.938C5.71611 6.28423 4 8.9417 4 12Z"/>'
-                : '<path d="M12 18C8.68629 18 6 15.3137 6 12C6 8.68629 8.68629 6 12 6C15.3137 6 18 8.68629 18 12C18 15.3137 15.3137 18 12 18ZM12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16ZM11 1H13V4H11V1ZM11 20H13V23H11V20ZM3.51472 4.92893L4.92893 3.51472L7.05025 5.63604L5.63604 7.05025L3.51472 4.92893ZM16.9497 18.364L18.364 16.9497L20.4853 19.0711L19.0711 20.4853L16.9497 18.364ZM19.0711 3.51472L20.4853 4.92893L18.364 7.05025L16.9497 5.63604L19.0711 3.51472ZM5.63604 16.9497L7.05025 18.364L4.92893 20.4853L3.51472 19.0711L5.63604 16.9497ZM23 11V13H20V11H23ZM4 11V13H1V11H4Z"/>';
+            if (isDarkMode) {
+                darkModeBtn.classList.remove('sun');
+                darkModeBtn.classList.add('moon');
+                darkModeIcon.innerHTML = '<path d="M10 7C10 10.866 13.134 14 17 14C18.9584 14 20.729 13.1957 21.9995 11.8995C22 11.933 22 11.9665 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C12.0335 2 12.067 2 12.1005 2.00049C10.8043 3.27098 10 5.04157 10 7ZM4 12C4 16.4183 7.58172 20 12 20C15.0583 20 17.7158 18.2839 19.062 15.7621C18.3945 15.9187 17.7035 16 17 16C12.0294 16 8 11.9706 8 7C8 6.29648 8.08133 5.60547 8.2379 4.938C5.71611 6.28423 4 8.9417 4 12Z"/>';
+            } else {
+                darkModeBtn.classList.remove('moon');
+                darkModeBtn.classList.add('sun');
+                darkModeIcon.innerHTML = '<path d="M12 18C8.68629 18 6 15.3137 6 12C6 8.68629 8.68629 6 12 6C15.3137 6 18 8.68629 18 12C18 15.3137 15.3137 18 12 18ZM12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16ZM11 1H13V4H11V1ZM11 20H13V23H11V20ZM3.51472 4.92893L4.92893 3.51472L7.05025 5.63604L5.63604 7.05025L3.51472 4.92893ZM16.9497 18.364L18.364 16.9497L20.4853 19.0711L19.0711 20.4853L16.9497 18.364ZM19.0711 3.51472L20.4853 4.92893L18.364 7.05025L16.9497 5.63604L19.0711 3.51472ZM5.63604 16.9497L7.05025 18.364L4.92893 20.4853L3.51472 19.0711L5.63604 16.9497ZM23 11V13H20V11H23ZM4 11V13H1V11H4Z"/>';
+            }
         });
 
         // Toggle view
         toggleViewBtn.addEventListener('click', () => {
             showingList = !showingList;
-
             if (showingList) {
                 mapView.style.display = 'none';
                 listView.classList.add('active');
@@ -500,23 +772,18 @@
             }
         });
 
-        // Refresh button
+        // Refresh & location
         refreshBtn.addEventListener('click', () => {
             loading.classList.add('active');
-            setTimeout(() => {
-                loading.classList.remove('active');
-            }, 1500);
+            setTimeout(() => loading.classList.remove('active'), 1500);
         });
 
-        // Location button
         locationBtn.addEventListener('click', () => {
             loading.classList.add('active');
-            setTimeout(() => {
-                loading.classList.remove('active');
-            }, 1000);
+            setTimeout(() => loading.classList.remove('active'), 1000);
         });
 
-        // Generate map markers
+        // Generate markers
         function generateMapMarkers() {
             bathrooms.forEach((bathroom, index) => {
                 setTimeout(() => {
@@ -529,11 +796,11 @@
                         <div class="marker-label">${bathroom.name}</div>
                     `;
                     mapView.appendChild(marker);
-                }, index * 200);
+                }, index * 150);
             });
         }
 
-        // Generate list cards
+        // Generate cards
         function generateListCards() {
             bathrooms.forEach(bathroom => {
                 const card = document.createElement('div');
@@ -550,11 +817,11 @@
                     <div class="card-divider"></div>
                     <div class="card-details">
                         <div class="detail-item">
-                            <span>🕐</span>
+                            <svg viewBox="0 0 24 24"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm1-8h4v2h-6V7h2v5z"/></svg>
                             <span>${bathroom.hours}</span>
                         </div>
                         <div class="detail-item">
-                            <span>🚗</span>
+                            <svg viewBox="0 0 24 24"><path d="M19 20H5v-9.5l7-5 7 5V20zm-8-9a1 1 0 1 0 2 0 1 1 0 0 0-2 0zm1 3a3 3 0 1 1 0-6 3 3 0 0 1 0 6zM1 22h22v2H1v-2z"/></svg>
                             <span>${bathroom.parking}</span>
                         </div>
                     </div>
@@ -563,17 +830,14 @@
             });
         }
 
-        // Initialize
+        // Init
         setTimeout(() => {
             generateMapMarkers();
             generateListCards();
         }, 500);
 
-        // Show initial loading
         loading.classList.add('active');
-        setTimeout(() => {
-            loading.classList.remove('active');
-        }, 1500);
+        setTimeout(() => loading.classList.remove('active'), 1500);
     </script>
 </body>
 </html>
