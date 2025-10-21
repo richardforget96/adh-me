@@ -10,8 +10,10 @@ import CoreLocation
 
 class BathroomService: ObservableObject {
     @Published var bathrooms: [Bathroom] = []
+    @Published var filteredBathrooms: [Bathroom] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
+    @Published var filters = BathroomFilters()
 
     private let overpassURL = "https://overpass-api.de/api/interpreter"
     private let searchRadiusMeters = 5000 // 5km radius
@@ -76,43 +78,60 @@ class BathroomService: ObservableObject {
     }
 
     private func parseBathroom(from element: OSMElement, userLocation: CLLocation) -> Bathroom? {
-        guard let tags = element.tags else { return nil }
+        Bathroom.createSample(from: element, userLocation: userLocation)
+    }
 
-        // Get coordinates
-        let lat: Double
-        let lon: Double
+    // MARK: - Filtering
 
-        if let elementLat = element.lat, let elementLon = element.lon {
-            lat = elementLat
-            lon = elementLon
-        } else if let center = element.center {
-            lat = center.lat
-            lon = center.lon
-        } else {
-            return nil
+    func applyFilters(favoritesManager: FavoritesManager) {
+        var result = bathrooms
+
+        // Favorites filter
+        if filters.showOnlyFavorites {
+            let favoriteIds = Set(favoritesManager.favorites.map { $0.id })
+            result = result.filter { favoriteIds.contains($0.id) }
         }
 
-        let location = CLLocation(latitude: lat, longitude: lon)
-        let distance = userLocation.distance(from: location)
+        // Rating filter
+        if filters.minimumRating > 0 {
+            result = result.filter { ($0.rating ?? 0) >= filters.minimumRating }
+        }
 
-        // Extract information
-        let name = tags["name"] ?? extractBusinessName(from: tags)
-        let businessType = extractBusinessType(from: tags)
-        let amenityType = tags["amenity"] ?? "toilets"
-        let openingHours = tags["opening_hours"]
-        let parkingEase = determineParkingEase(from: tags)
+        // Distance filter
+        if filters.maxDistance < 5000 {
+            result = result.filter { ($0.distance ?? Double.infinity) <= filters.maxDistance }
+        }
 
-        return Bathroom(
-            id: "\(element.id)",
-            name: name,
-            latitude: lat,
-            longitude: lon,
-            businessType: businessType,
-            amenityType: amenityType,
-            openingHours: openingHours,
-            parkingEase: parkingEase,
-            distance: distance
-        )
+        // Free only filter
+        if filters.showFreeOnly {
+            result = result.filter { !$0.accessRequirements.requiresFee }
+        }
+
+        // Accessibility filters
+        if filters.requireWheelchairAccess {
+            result = result.filter { $0.accessibility.wheelchairAccessible == .full }
+        }
+
+        if filters.requireBabyChanging {
+            result = result.filter { $0.accessibility.babyChangingStation }
+        }
+
+        if filters.requireGenderNeutral {
+            result = result.filter { $0.accessibility.genderNeutral }
+        }
+
+        if filters.requireToiletPaper {
+            result = result.filter { $0.details.hasToiletPaper }
+        }
+
+        filteredBathrooms = result.sorted {
+            ($0.distance ?? .infinity) < ($1.distance ?? .infinity)
+        }
+    }
+
+    func resetFilters() {
+        filters = BathroomFilters()
+        filteredBathrooms = bathrooms
     }
 
     private func extractBusinessName(from tags: [String: String]) -> String {

@@ -11,6 +11,7 @@ import SwiftUI
 struct LooApp: App {
     @StateObject private var locationManager = LocationManager()
     @StateObject private var bathroomService = BathroomService()
+    @StateObject private var favoritesManager = FavoritesManager()
     @AppStorage("isDarkMode") private var isDarkMode = false
 
     var body: some Scene {
@@ -18,6 +19,7 @@ struct LooApp: App {
             ContentView()
                 .environmentObject(locationManager)
                 .environmentObject(bathroomService)
+                .environmentObject(favoritesManager)
                 .preferredColorScheme(isDarkMode ? .dark : .light)
         }
     }
