@@ -1,56 +1,111 @@
-// Sample DBT lineage data
+// Sample DBT lineage data - Expanded for better visualization
 const lineageData = {
     nodes: [
-        // Source tables
+        // Source tables (Raw data from various systems)
         { id: 'orders', name: 'orders', type: 'source', description: 'Raw orders from e-commerce platform' },
         { id: 'customers', name: 'customers', type: 'source', description: 'Customer master data' },
         { id: 'products', name: 'products', type: 'source', description: 'Product catalog' },
         { id: 'vehicles', name: 'vehicles', type: 'source', description: 'Vehicle inventory data' },
         { id: 'receipts', name: 'receipts', type: 'source', description: 'Payment receipts' },
         { id: 'shipments', name: 'shipments', type: 'source', description: 'Shipping and delivery data' },
+        { id: 'inventory', name: 'inventory', type: 'source', description: 'Product inventory levels' },
+        { id: 'payments', name: 'payments', type: 'source', description: 'Payment transactions' },
+        { id: 'returns', name: 'returns', type: 'source', description: 'Product returns and refunds' },
+        { id: 'reviews', name: 'reviews', type: 'source', description: 'Customer product reviews' },
+        { id: 'suppliers', name: 'suppliers', type: 'source', description: 'Supplier information' },
+        { id: 'warehouses', name: 'warehouses', type: 'source', description: 'Warehouse locations and data' },
 
-        // Staging models
+        // Staging models (Cleaned and standardized)
         { id: 'stg_orders', name: 'stg_orders', type: 'staging', description: 'Cleaned and standardized orders' },
         { id: 'stg_customers', name: 'stg_customers', type: 'staging', description: 'Cleaned customer data' },
         { id: 'stg_products', name: 'stg_products', type: 'staging', description: 'Cleaned product data' },
         { id: 'stg_receipts', name: 'stg_receipts', type: 'staging', description: 'Cleaned receipt data' },
+        { id: 'stg_inventory', name: 'stg_inventory', type: 'staging', description: 'Cleaned inventory data' },
+        { id: 'stg_payments', name: 'stg_payments', type: 'staging', description: 'Cleaned payment data' },
+        { id: 'stg_returns', name: 'stg_returns', type: 'staging', description: 'Cleaned returns data' },
+        { id: 'stg_reviews', name: 'stg_reviews', type: 'staging', description: 'Cleaned review data' },
+        { id: 'stg_shipments', name: 'stg_shipments', type: 'staging', description: 'Cleaned shipment data' },
 
-        // Intermediate models
+        // Intermediate models (Business logic applied)
         { id: 'int_order_items', name: 'int_order_items', type: 'model', description: 'Order line items with product details' },
         { id: 'int_customer_orders', name: 'int_customer_orders', type: 'model', description: 'Aggregated customer order history' },
+        { id: 'int_order_payments', name: 'int_order_payments', type: 'model', description: 'Orders joined with payment data' },
+        { id: 'int_product_performance', name: 'int_product_performance', type: 'model', description: 'Product sales and review metrics' },
+        { id: 'int_customer_lifetime', name: 'int_customer_lifetime', type: 'model', description: 'Customer lifetime value calculations' },
+        { id: 'int_inventory_flow', name: 'int_inventory_flow', type: 'model', description: 'Inventory movement analysis' },
 
-        // Mart models (final)
+        // Mart models (Final analytical models)
         { id: 'fct_orders', name: 'fct_orders', type: 'model', description: 'Orders fact table with all dimensions' },
         { id: 'fct_revenue', name: 'fct_revenue', type: 'model', description: 'Revenue metrics by various dimensions' },
+        { id: 'fct_shipments', name: 'fct_shipments', type: 'model', description: 'Shipment performance metrics' },
         { id: 'dim_customers', name: 'dim_customers', type: 'model', description: 'Customer dimension table' },
+        { id: 'dim_products', name: 'dim_products', type: 'model', description: 'Product dimension with attributes' },
+        { id: 'dim_date', name: 'dim_date', type: 'model', description: 'Date dimension table' },
         { id: 'metrics_dashboard', name: 'metrics_dashboard', type: 'model', description: 'Business metrics for dashboards' },
+        { id: 'customer_360', name: 'customer_360', type: 'model', description: 'Complete customer view' },
+        { id: 'inventory_report', name: 'inventory_report', type: 'model', description: 'Inventory status reporting' },
     ],
     links: [
-        // Source -> Staging
+        // Source -> Staging layer
         { source: 'orders', target: 'stg_orders' },
         { source: 'customers', target: 'stg_customers' },
         { source: 'products', target: 'stg_products' },
         { source: 'receipts', target: 'stg_receipts' },
+        { source: 'inventory', target: 'stg_inventory' },
+        { source: 'payments', target: 'stg_payments' },
+        { source: 'returns', target: 'stg_returns' },
+        { source: 'reviews', target: 'stg_reviews' },
+        { source: 'shipments', target: 'stg_shipments' },
 
-        // Staging -> Intermediate
+        // Staging -> Intermediate layer
         { source: 'stg_orders', target: 'int_order_items' },
         { source: 'stg_products', target: 'int_order_items' },
         { source: 'stg_orders', target: 'int_customer_orders' },
         { source: 'stg_customers', target: 'int_customer_orders' },
+        { source: 'stg_orders', target: 'int_order_payments' },
+        { source: 'stg_payments', target: 'int_order_payments' },
+        { source: 'stg_receipts', target: 'int_order_payments' },
+        { source: 'stg_products', target: 'int_product_performance' },
+        { source: 'stg_reviews', target: 'int_product_performance' },
+        { source: 'stg_orders', target: 'int_product_performance' },
+        { source: 'stg_customers', target: 'int_customer_lifetime' },
+        { source: 'stg_orders', target: 'int_customer_lifetime' },
+        { source: 'stg_payments', target: 'int_customer_lifetime' },
+        { source: 'stg_inventory', target: 'int_inventory_flow' },
+        { source: 'stg_products', target: 'int_inventory_flow' },
 
-        // Intermediate -> Mart
+        // Intermediate -> Mart layer (Facts)
         { source: 'int_order_items', target: 'fct_orders' },
         { source: 'int_customer_orders', target: 'fct_orders' },
-        { source: 'stg_receipts', target: 'fct_orders' },
+        { source: 'int_order_payments', target: 'fct_orders' },
         { source: 'vehicles', target: 'fct_orders' },
-        { source: 'shipments', target: 'fct_orders' },
-
         { source: 'fct_orders', target: 'fct_revenue' },
+        { source: 'int_order_payments', target: 'fct_revenue' },
+        { source: 'stg_shipments', target: 'fct_shipments' },
+        { source: 'fct_orders', target: 'fct_shipments' },
+        { source: 'warehouses', target: 'fct_shipments' },
+
+        // Intermediate -> Mart layer (Dimensions)
         { source: 'stg_customers', target: 'dim_customers' },
         { source: 'int_customer_orders', target: 'dim_customers' },
+        { source: 'int_customer_lifetime', target: 'dim_customers' },
+        { source: 'stg_products', target: 'dim_products' },
+        { source: 'int_product_performance', target: 'dim_products' },
+        { source: 'suppliers', target: 'dim_products' },
 
+        // Mart -> Final dashboards/reports
         { source: 'fct_revenue', target: 'metrics_dashboard' },
         { source: 'dim_customers', target: 'metrics_dashboard' },
+        { source: 'dim_products', target: 'metrics_dashboard' },
+        { source: 'fct_orders', target: 'metrics_dashboard' },
+        { source: 'dim_customers', target: 'customer_360' },
+        { source: 'fct_orders', target: 'customer_360' },
+        { source: 'int_customer_lifetime', target: 'customer_360' },
+        { source: 'stg_reviews', target: 'customer_360' },
+        { source: 'int_inventory_flow', target: 'inventory_report' },
+        { source: 'dim_products', target: 'inventory_report' },
+        { source: 'stg_inventory', target: 'inventory_report' },
+        { source: 'stg_returns', target: 'inventory_report' },
     ]
 };
 
