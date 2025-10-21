@@ -62,9 +62,9 @@ const config = {
         model: 35
     },
     nodeColors: {
-        source: '#10b981',
-        staging: '#f59e0b',
-        model: '#6366f1'
+        source: '#00ff00',
+        staging: '#ffff00',
+        model: '#00ffff'
     },
     linkDistance: 150,
     chargeStrength: -800,
@@ -312,7 +312,7 @@ class DBTLineageGraph {
         this.node.classed('highlighted', false);
         this.link.classed('highlighted', false);
         this.selectedNode = null;
-        document.getElementById('nodeInfo').innerHTML = '<p class="info-empty">Click a node to view details</p>';
+        document.getElementById('nodeInfo').innerHTML = '<p class="info-empty">SELECT A SIGNAL TO ANALYZE...</p>';
     }
 
     zoomIn() {

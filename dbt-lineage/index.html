@@ -3,22 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DBT Lineage Explorer</title>
+    <title>DBT LINEAGE RADAR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
+    <div class="scan-line"></div>
     <div class="app-container">
         <!-- Header -->
         <header class="header">
             <div class="header-content">
                 <h1 class="app-title">
-                    <span class="title-icon">🔗</span>
-                    DBT Lineage Explorer
+                    <span class="title-icon">📡</span>
+                    DBT LINEAGE RADAR
                 </h1>
                 <div class="controls">
-                    <input type="text" id="searchBox" placeholder="Search tables..." class="search-input">
-                    <button id="resetBtn" class="btn btn-reset">Reset View</button>
+                    <input type="text" id="searchBox" placeholder="SCAN FOR SIGNALS..." class="search-input">
+                    <button id="resetBtn" class="btn btn-reset">RESET RADAR</button>
                 </div>
             </div>
         </header>
@@ -28,17 +32,17 @@
             <!-- Sidebar -->
             <aside class="sidebar">
                 <div class="sidebar-section">
-                    <h3>Legend</h3>
+                    <h3>Signal Types</h3>
                     <div class="legend-item">
-                        <span class="legend-color" style="background: #6366f1;"></span>
+                        <span class="legend-color" style="background: #00ffff; color: #00ffff;"></span>
                         <span>DBT Models</span>
                     </div>
                     <div class="legend-item">
-                        <span class="legend-color" style="background: #10b981;"></span>
+                        <span class="legend-color" style="background: #00ff00; color: #00ff00;"></span>
                         <span>Source Tables</span>
                     </div>
                     <div class="legend-item">
-                        <span class="legend-color" style="background: #f59e0b;"></span>
+                        <span class="legend-color" style="background: #ffff00; color: #ffff00;"></span>
                         <span>Staging</span>
                     </div>
                 </div>
@@ -60,9 +64,9 @@
                 </div>
 
                 <div class="sidebar-section">
-                    <h3>Selected Node</h3>
+                    <h3>Signal Details</h3>
                     <div id="nodeInfo" class="node-info">
-                        <p class="info-empty">Click a node to view details</p>
+                        <p class="info-empty">SELECT A SIGNAL TO ANALYZE...</p>
                     </div>
                 </div>
             </aside>
