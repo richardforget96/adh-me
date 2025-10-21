@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DBT Lineage Explorer</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="app-title">
+                    <span class="title-icon">🔗</span>
+                    DBT Lineage Explorer
+                </h1>
+                <div class="controls">
+                    <input type="text" id="searchBox" placeholder="Search tables..." class="search-input">
+                    <button id="resetBtn" class="btn btn-reset">Reset View</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-section">
+                    <h3>Legend</h3>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #6366f1;"></span>
+                        <span>DBT Models</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #10b981;"></span>
+                        <span>Source Tables</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background: #f59e0b;"></span>
+                        <span>Staging</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3>Statistics</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">Total Models:</span>
+                        <span class="stat-value" id="totalModels">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Source Tables:</span>
+                        <span class="stat-value" id="totalSources">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Dependencies:</span>
+                        <span class="stat-value" id="totalDeps">0</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3>Selected Node</h3>
+                    <div id="nodeInfo" class="node-info">
+                        <p class="info-empty">Click a node to view details</p>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Graph Container -->
+            <div class="graph-container">
+                <svg id="graph"></svg>
+                <div class="zoom-controls">
+                    <button id="zoomIn" class="zoom-btn">+</button>
+                    <button id="zoomOut" class="zoom-btn">−</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
