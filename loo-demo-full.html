@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loo - Complete Feature Demo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            background: linear-gradient(135deg, #e0ecfa 0%, #c8daf2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 48px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #1a3d66 0%, #2d5a8c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tagline {
+            text-align: center;
+            font-size: 20px;
+            color: #666;
+            margin-bottom: 40px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .levels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .level-card {
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            border: 3px solid;
+            transition: transform 0.2s;
+        }
+
+        .level-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .level-card.active {
+            box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+            transform: scale(1.05);
+        }
+
+        .level-emoji {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .level-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .level-range {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .badges-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .badge-card {
+            background: linear-gradient(135deg, rgba(0,122,255,0.1), rgba(0,200,255,0.05));
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid rgba(0,122,255,0.2);
+        }
+
+        .badge-card.locked {
+            opacity: 0.4;
+            background: rgba(0,0,0,0.05);
+            border-color: rgba(0,0,0,0.1);
+        }
+
+        .badge-emoji {
+            font-size: 36px;
+            margin-bottom: 8px;
+        }
+
+        .badge-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .badge-desc {
+            font-size: 11px;
+            opacity: 0.7;
+        }
+
+        .reports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .report-type {
+            background: rgba(255,255,255,0.8);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid rgba(0,0,0,0.1);
+        }
+
+        .report-emoji {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        .report-name {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .report-points {
+            font-size: 12px;
+            color: #007AFF;
+            font-weight: 700;
+        }
+
+        .trust-score-card {
+            background: linear-gradient(135deg, rgba(76,175,80,0.15), rgba(76,175,80,0.05));
+            padding: 25px;
+            border-radius: 16px;
+            margin-top: 20px;
+        }
+
+        .trust-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .trust-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 8px;
+        }
+
+        .feature-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .feature-card {
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(0,122,255,0.05), rgba(0,200,255,0.02));
+            border-radius: 12px;
+            border-left: 4px solid #007AFF;
+        }
+
+        .feature-card h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feature-card ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .feature-card li {
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .feature-card li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #007AFF, #00C8FF);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 18px;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+
+        .cta-button:hover {
+            transform: scale(1.05);
+        }
+
+        .privacy-banner {
+            background: linear-gradient(135deg, rgba(76,175,80,0.15), rgba(76,175,80,0.05));
+            border: 2px solid rgba(76,175,80,0.3);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .privacy-banner h3 {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .privacy-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .demo-link {
+            text-align: center;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💧 Loo</h1>
+        <p class="tagline">The Waze of Bathroom Finding - Complete Feature Showcase</p>
+
+        <div class="privacy-banner">
+            <h3><span>🔒</span> 100% Privacy-First Design</h3>
+            <p style="margin-bottom: 10px;">Built from the ground up with your privacy as the #1 priority</p>
+            <div class="privacy-features">
+                <div>✓ No account required</div>
+                <div>✓ Zero tracking or analytics</div>
+                <div>✓ All data stored locally</div>
+                <div>✓ Fully anonymous contributions</div>
+                <div>✓ 100% free APIs (OpenStreetMap)</div>
+                <div>✓ No servers to hack</div>
+            </div>
+        </div>
+
+        <!-- GAMIFICATION SYSTEM -->
+        <div class="section">
+            <h2><span>🎮</span> 5-Tier Level System</h2>
+            <p>Progress through levels by contributing to the community. All levels are earned through helpful reports!</p>
+            <div class="levels-grid">
+                <div class="level-card" style="border-color: #94C5FF; background: linear-gradient(135deg, rgba(148,197,255,0.2), rgba(148,197,255,0.05));">
+                    <div class="level-emoji">💧</div>
+                    <div class="level-name">Loo Newbie</div>
+                    <div class="level-range">0-100 points</div>
+                </div>
+                <div class="level-card active" style="border-color: #5EA3FF; background: linear-gradient(135deg, rgba(94,163,255,0.3), rgba(94,163,255,0.1));">
+                    <div class="level-emoji">🚽</div>
+                    <div class="level-name">Bathroom Scout</div>
+                    <div class="level-range">100-500 points</div>
+                    <div style="margin-top: 8px; font-size: 12px; color: #007AFF; font-weight: 600;">← You are here!</div>
+                </div>
+                <div class="level-card" style="border-color: #2E7FFF; background: linear-gradient(135deg, rgba(46,127,255,0.2), rgba(46,127,255,0.05));">
+                    <div class="level-emoji">🏆</div>
+                    <div class="level-name">Restroom Ranger</div>
+                    <div class="level-range">500-1,500 points</div>
+                </div>
+                <div class="level-card" style="border-color: #9F5FFF; background: linear-gradient(135deg, rgba(159,95,255,0.2), rgba(159,95,255,0.05));">
+                    <div class="level-emoji">👑</div>
+                    <div class="level-name">Toilet Titan</div>
+                    <div class="level-range">1,500-5,000 points</div>
+                </div>
+                <div class="level-card" style="border-color: #FFD700; background: linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,215,0,0.05));">
+                    <div class="level-emoji">⭐</div>
+                    <div class="level-name">Loo Royalty</div>
+                    <div class="level-range">5,000+ points</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BADGES -->
+        <div class="section">
+            <h2><span>🏅</span> 7 Achievement Badges</h2>
+            <p>Unlock special badges by completing specific challenges</p>
+            <div class="badges-grid">
+                <div class="badge-card">
+                    <div class="badge-emoji">🔑</div>
+                    <div class="badge-name">Code Master</div>
+                    <div class="badge-desc">Shared 25+ door codes</div>
+                </div>
+                <div class="badge-card">
+                    <div class="badge-emoji">📸</div>
+                    <div class="badge-name">Photo Pro</div>
+                    <div class="badge-desc">Uploaded 50+ photos</div>
+                </div>
+                <div class="badge-card">
+                    <div class="badge-emoji">♿</div>
+                    <div class="badge-name">Accessibility Advocate</div>
+                    <div class="badge-desc">Reported 20+ accessible bathrooms</div>
+                </div>
+                <div class="badge-card">
+                    <div class="badge-emoji">🎯</div>
+                    <div class="badge-name">Accuracy Expert</div>
+                    <div class="badge-desc">90%+ verified reports</div>
+                </div>
+                <div class="badge-card locked">
+                    <div class="badge-emoji">🌍</div>
+                    <div class="badge-name">World Traveler</div>
+                    <div class="badge-desc">Used bathrooms in 10+ cities</div>
+                </div>
+                <div class="badge-card locked">
+                    <div class="badge-emoji">🌙</div>
+                    <div class="badge-name">Night Owl</div>
+                    <div class="badge-desc">Used 10+ 24-hour bathrooms</div>
+                </div>
+                <div class="badge-card locked">
+                    <div class="badge-emoji">⚡</div>
+                    <div class="badge-name">Quick Responder</div>
+                    <div class="badge-desc">Reported within 1 min of arrival</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- REPORT TYPES -->
+        <div class="section">
+            <h2><span>📢</span> 13 Report Types with Points</h2>
+            <p>Every contribution earns points based on value to the community</p>
+            <div class="reports-grid">
+                <div class="report-type" style="border-color: #FFD700; background: rgba(255,215,0,0.1);">
+                    <div class="report-emoji">🔢</div>
+                    <div class="report-name">Door Code</div>
+                    <div class="report-points">+20 pts ⭐</div>
+                </div>
+                <div class="report-type">
+                    <div class="report-emoji">🆕</div>
+                    <div class="report-name">New Bathroom</div>
+                    <div class="report-points">+15 pts</div>
+                </div>
+                <div class="report-type">
+                    <div class="report-emoji">⭐</div>
+                    <div class="report-name">Review</div>
+                    <div class="report-points">+12 pts</div>
+                </div>
+                <div class="report-type">
+                    <div class="report-emoji">♿</div>
+                    <div class="report-name">Accessibility</div>
+                    <div class="report-points">+10 pts</div>
+                </div>
+                <div class="report-type">
+                    <div class="report-emoji">🚫</div>
+                    <div class="report-name">Out of Order</div>
+                    <div class="report-points">+10 pts</div>
+                </div>
+                <div class="report-type">
+                    <div class="report-emoji">📸</div>
+                    <div class="report-name">Photo</div>
+                    <div class="report-points">+8 pts</div>
+                </div>
+                <div class="report-type">
+                    <div class="report-emoji">🕐</div>
+                    <div class="report-name">Hours Update</div>
+                    <div class="report-points">+5 pts</div>
+                </div>
+                <div class="report-type">
+                    <div class="report-emoji">✨</div>
+                    <div class="report-name">Clean</div>
+                    <div class="report-points">+3 pts</div>
+                </div>
+                <div class="report-type">
+                    <div class="report-emoji">⚠️</div>
+                    <div class="report-name">Dirty</div>
+                    <div class="report-points">+3 pts</div>
+                </div>
+                <div class="report-type">
+                    <div class="report-emoji">🧻</div>
+                    <div class="report-name">No Paper</div>
+                    <div class="report-points">+3 pts</div>
+                </div>
+                <div class="report-type">
+                    <div class="report-emoji">🧼</div>
+                    <div class="report-name">No Soap</div>
+                    <div class="report-points">+3 pts</div>
+                </div>
+                <div class="report-type">
+                    <div class="report-emoji">⏰</div>
+                    <div class="report-name">Long Line</div>
+                    <div class="report-points">+3 pts</div>
+                </div>
+                <div class="report-type">
+                    <div class="report-emoji">🔒</div>
+                    <div class="report-name">Locked</div>
+                    <div class="report-points">+3 pts</div>
+                </div>
+            </div>
+            <p style="margin-top: 20px; font-size: 14px; opacity: 0.8;">💡 <strong>Bonus:</strong> Verifying others' reports earns +3 points!</p>
+        </div>
+
+        <!-- TRUST SCORE -->
+        <div class="section">
+            <h2><span>🎯</span> Community Trust Score</h2>
+            <p>Dynamic trust score (0-100) based on community verification</p>
+            <div class="trust-score-card">
+                <div style="text-align: center; font-size: 64px; font-weight: 700; color: #4CAF50; margin-bottom: 10px;">85</div>
+                <div style="text-align: center; font-size: 18px; opacity: 0.8; margin-bottom: 20px;">Your Trust Score</div>
+                <div class="trust-breakdown">
+                    <div class="trust-item">
+                        <span>Base Score</span>
+                        <strong>+50</strong>
+                    </div>
+                    <div class="trust-item">
+                        <span>Verifications (42)</span>
+                        <strong>+40</strong>
+                    </div>
+                    <div class="trust-item">
+                        <span>Activity Bonus</span>
+                        <strong>+10</strong>
+                    </div>
+                    <div class="trust-item">
+                        <span>Flags (3)</span>
+                        <strong>-15</strong>
+                    </div>
+                </div>
+                <p style="margin-top: 15px; font-size: 13px; opacity: 0.7;">Higher trust scores make your reports appear first and get verified faster!</p>
+            </div>
+        </div>
+
+        <!-- FEATURES -->
+        <div class="section">
+            <h2><span>✨</span> Complete Feature Set</h2>
+            <div class="feature-showcase">
+                <div class="feature-card">
+                    <h3><span>🗺️</span> Advanced Filtering</h3>
+                    <ul>
+                        <li>Wheelchair accessible</li>
+                        <li>Baby changing stations</li>
+                        <li>Gender neutral options</li>
+                        <li>Rating minimums</li>
+                        <li>Distance radius</li>
+                        <li>Free access only</li>
+                        <li>Open now</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h3><span>🚨</span> Emergency Mode</h3>
+                    <ul>
+                        <li>Auto-sorts by distance</li>
+                        <li>Highlights closest options</li>
+                        <li>One-tap activation</li>
+                        <li>Visual urgency indicator</li>
+                        <li>Quick filter to open/free</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h3><span>👥</span> Community Features</h3>
+                    <ul>
+                        <li>Real-time status reports</li>
+                        <li>Verify others' reports</li>
+                        <li>Thank helpful users</li>
+                        <li>Share door codes</li>
+                        <li>Upload photos</li>
+                        <li>Write detailed reviews</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h3><span>⭐</span> Smart Favorites</h3>
+                    <ul>
+                        <li>Save preferred locations</li>
+                        <li>Offline access to favorites</li>
+                        <li>Quick filter for favorites</li>
+                        <li>Sync across devices (optional)</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h3><span>🎨</span> Beautiful Design</h3>
+                    <ul>
+                        <li>Liquid Glass UI (iOS 26)</li>
+                        <li>Skeuomorphic elements</li>
+                        <li>Dark mode support</li>
+                        <li>Smooth animations</li>
+                        <li>Tactile feedback</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h3><span>♿</span> Accessibility First</h3>
+                    <ul>
+                        <li>Wheelchair access info</li>
+                        <li>Baby changing details</li>
+                        <li>Gender neutral tracking</li>
+                        <li>VoiceOver support</li>
+                        <li>High contrast mode</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- TECH STACK -->
+        <div class="section">
+            <h2><span>🛠️</span> Technology</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 20px;">
+                <div style="padding: 15px; background: rgba(0,0,0,0.03); border-radius: 8px;">
+                    <strong>iOS Native</strong>
+                    <p style="font-size: 14px; opacity: 0.8; margin-top: 5px;">Built with Swift 5.7+ and SwiftUI for maximum performance</p>
+                </div>
+                <div style="padding: 15px; background: rgba(0,0,0,0.03); border-radius: 8px;">
+                    <strong>Free APIs</strong>
+                    <p style="font-size: 14px; opacity: 0.8; margin-top: 5px;">OpenStreetMap/Overpass API - 100% free, no limits</p>
+                </div>
+                <div style="padding: 15px; background: rgba(0,0,0,0.03); border-radius: 8px;">
+                    <strong>Local Storage</strong>
+                    <p style="font-size: 14px; opacity: 0.8; margin-top: 5px;">All data stays on device using UserDefaults</p>
+                </div>
+                <div style="padding: 15px; background: rgba(0,0,0,0.03); border-radius: 8px;">
+                    <strong>Optional CloudKit</strong>
+                    <p style="font-size: 14px; opacity: 0.8; margin-top: 5px;">Sync across devices without compromising privacy</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-link">
+            <a href="loo-demo.html" class="cta-button">Try Interactive Demo →</a>
+            <p style="margin-top: 15px; font-size: 14px; opacity: 0.7;">Click to experience the full working demo</p>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; padding: 20px; opacity: 0.6; font-size: 14px;">
+            <p>🤖 Built with privacy, community, and compassion in mind</p>
+            <p style="margin-top: 5px;">No ads • No tracking • No BS</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Loo - Privacy-First Bathroom Finder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            background: linear-gradient(135deg, #e0ecfa 0%, #c8daf2 100%);
+            position: relative;
+            transition: background 0.4s ease;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #0d0d14 0%, #1e1e26 100%);
+            color: #ffffff;
+        }
+
+        .app-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            max-width: 430px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* HEADER */
+        .header {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            position: relative;
+            z-index: 10;
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.25) 100%);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.8);
+        }
+
+        body.dark-mode .header {
+            background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
+        }
+
+        .app-title {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1a3d66 0%, #2d5a8c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        body.dark-mode .app-title {
+            background: linear-gradient(135deg, #ffffff 0%, #cce5ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            backdrop-filter: blur(20px);
+            background: rgba(255,255,255,0.3);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .user-badge:active {
+            transform: scale(0.95);
+        }
+
+        body.dark-mode .user-badge {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .emergency-banner {
+            background: linear-gradient(90deg, rgba(255,0,0,0.15), rgba(255,100,0,0.15));
+            padding: 12px 20px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid rgba(255,0,0,0.3);
+            animation: urgent-pulse 2s ease-in-out infinite;
+        }
+
+        .emergency-banner.active {
+            display: flex;
+        }
+
+        @keyframes urgent-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* ACTIVE FILTERS BAR */
+        .active-filters-bar {
+            padding: 12px 20px;
+            background: rgba(0,122,255,0.1);
+            border-bottom: 1px solid rgba(0,122,255,0.2);
+            display: none;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .active-filters-bar.visible {
+            display: flex;
+        }
+
+        .filter-chip {
+            background: rgba(0,122,255,0.2);
+            border: 1px solid rgba(0,122,255,0.4);
+            border-radius: 16px;
+            padding: 4px 12px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-chip-close {
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            opacity: 0.6;
+        }
+
+        /* MAP VIEW */
+        .map-view {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #a8d5ff 0%, #7ab8ff 100%);
+            border-radius: 0;
+            overflow: hidden;
+            display: none;
+        }
+
+        .map-view.active {
+            display: block;
+        }
+
+        body.dark-mode .map-view {
+            background: linear-gradient(135deg, #1a2b3d 0%, #0f1923 100%);
+        }
+
+        .map-roads {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.3;
+        }
+
+        .map-marker {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: rgba(0,122,255,0.9);
+            border: 3px solid white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .map-marker:hover {
+            transform: scale(1.1);
+        }
+
+        .map-marker.favorite {
+            border-color: #FFD700;
+        }
+
+        .map-marker.active-report::after {
+            content: '🔴';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            font-size: 14px;
+        }
+
+        .user-location {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #007AFF;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 0 0 8px rgba(0,122,255,0.2);
+        }
+
+        /* LIST VIEW */
+        .list-view {
+            display: block;
+        }
+
+        .list-view.hidden {
+            display: none;
+        }
+
+        .bathroom-card {
+            backdrop-filter: blur(30px) saturate(180%);
+            background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.4) 100%);
+            border-radius: 20px;
+            padding: 18px;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            border: 1.5px solid rgba(255,255,255,0.6);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .bathroom-card:active {
+            transform: scale(0.98);
+        }
+
+        body.dark-mode .bathroom-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border: 1.5px solid rgba(255,255,255,0.15);
+        }
+
+        .card-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(0,122,255,0.9) 0%, rgba(0,200,255,0.7) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0,122,255,0.3);
+        }
+
+        .live-report {
+            background: rgba(255,149,0,0.15);
+            border: 1px solid rgba(255,149,0,0.3);
+            border-radius: 8px;
+            padding: 6px 12px;
+            margin: 12px 0;
+            font-size: 12px;
+            color: #ff9500;
+            font-weight: 500;
+        }
+
+        body.dark-mode .live-report {
+            background: rgba(255,149,0,0.2);
+        }
+
+        .control-panel {
+            padding: 12px 16px;
+            backdrop-filter: blur(40px);
+            background: linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.3) 100%);
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            box-shadow: 0 -2px 20px rgba(0,0,0,0.1);
+        }
+
+        body.dark-mode .control-panel {
+            background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.04) 100%);
+        }
+
+        .btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            backdrop-filter: blur(20px);
+            background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.5) 100%);
+            border: 1.5px solid rgba(255,255,255,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        body.dark-mode .btn {
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%);
+        }
+
+        .btn.emergency {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .btn.emergency.active {
+            background: linear-gradient(135deg, rgba(255,0,0,0.5) 0%, rgba(255,100,0,0.3) 100%);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .btn.wide {
+            width: 120px;
+        }
+
+        /* MODALS */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            max-width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        body.dark-mode .modal-content {
+            background: #1e1e26;
+            color: white;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .close-btn:hover {
+            opacity: 1;
+        }
+
+        /* PROFILE */
+        .level-card {
+            text-align: center;
+            padding: 24px;
+            background: linear-gradient(135deg, rgba(0,122,255,0.15), rgba(0,200,255,0.1));
+            border-radius: 16px;
+            margin-bottom: 24px;
+        }
+
+        body.dark-mode .level-card {
+            background: linear-gradient(135deg, rgba(0,122,255,0.2), rgba(0,200,255,0.15));
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #007AFF, #00C8FF);
+            transition: width 0.5s ease;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.5);
+            backdrop-filter: blur(20px);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        body.dark-mode .stat-card {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .badges-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .badge {
+            background: rgba(255,255,255,0.5);
+            backdrop-filter: blur(20px);
+            border-radius: 12px;
+            padding: 16px 12px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .badge.locked {
+            opacity: 0.4;
+        }
+
+        body.dark-mode .badge {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* FILTERS */
+        .filter-section {
+            margin-bottom: 24px;
+        }
+
+        .filter-section h3 {
+            margin-bottom: 12px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .filter-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        body.dark-mode .filter-toggle {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .toggle-switch {
+            width: 50px;
+            height: 28px;
+            background: #ccc;
+            border-radius: 14px;
+            position: relative;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.on {
+            background: #007AFF;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s;
+        }
+
+        .toggle-switch.on::after {
+            left: 24px;
+        }
+
+        .rating-selector {
+            display: flex;
+            gap: 8px;
+            margin: 12px 0;
+        }
+
+        .rating-btn {
+            padding: 8px 16px;
+            background: rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .rating-btn.selected {
+            background: #007AFF;
+            color: white;
+            border-color: #007AFF;
+        }
+
+        body.dark-mode .rating-btn {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        .distance-slider {
+            width: 100%;
+            margin: 16px 0;
+        }
+
+        /* ADD BATHROOM */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 8px;
+            background: rgba(0,0,0,0.03);
+            font-family: inherit;
+        }
+
+        body.dark-mode .form-group input,
+        body.dark-mode .form-group textarea {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #007AFF, #00C8FF);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .submit-btn:active {
+            transform: scale(0.98);
+        }
+
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .report-btn {
+            background: rgba(255,255,255,0.5);
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .report-btn:active {
+            transform: scale(0.95);
+        }
+
+        body.dark-mode .report-btn {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        .privacy-box {
+            background: rgba(76,175,80,0.1);
+            border: 1px solid rgba(76,175,80,0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+
+        .privacy-box h4 {
+            margin-bottom: 12px;
+        }
+
+        .privacy-box ul {
+            list-style: none;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- HEADER -->
+        <div class="header">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="font-size: 28px;">💧</div>
+                <div class="app-title">Loo</div>
+            </div>
+            <div class="user-badge" onclick="openProfile()">
+                <span id="userLevel">🚽</span>
+                <span id="userPoints" style="font-weight: 600; font-size: 14px;">250</span>
+            </div>
+            <button class="btn" style="width: 50px; height: 50px;" onclick="toggleDarkMode()">
+                <span id="darkModeIcon">☀️</span>
+            </button>
+        </div>
+
+        <!-- EMERGENCY BANNER -->
+        <div class="emergency-banner" id="emergencyBanner">
+            <span style="color: #ff0000; font-weight: bold; font-size: 16px;">🚨 EMERGENCY MODE</span>
+            <span style="margin-left: auto; font-size: 13px; opacity: 0.8;">Showing closest bathrooms</span>
+        </div>
+
+        <!-- ACTIVE FILTERS BAR -->
+        <div class="active-filters-bar" id="activeFiltersBar"></div>
+
+        <!-- CONTENT AREA -->
+        <div class="content" id="content">
+            <!-- LIST VIEW -->
+            <div class="list-view" id="listView"></div>
+
+            <!-- MAP VIEW -->
+            <div class="map-view" id="mapView">
+                <svg class="map-roads" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="0" y1="200" x2="400" y2="200" stroke="rgba(0,0,0,0.2)" stroke-width="8"/>
+                    <line x1="0" y1="400" x2="400" y2="400" stroke="rgba(0,0,0,0.2)" stroke-width="8"/>
+                    <line x1="150" y1="0" x2="150" y2="600" stroke="rgba(0,0,0,0.2)" stroke-width="8"/>
+                    <line x1="280" y1="0" x2="280" y2="600" stroke="rgba(0,0,0,0.2)" stroke-width="8"/>
+                </svg>
+                <!-- User location -->
+                <div class="user-location" style="left: 50%; top: 50%;"></div>
+                <!-- Map markers will be added dynamically -->
+            </div>
+        </div>
+
+        <!-- CONTROL PANEL -->
+        <div class="control-panel">
+            <button class="btn emergency" id="emergencyBtn" onclick="toggleEmergency()" title="Emergency Mode">⚡</button>
+            <button class="btn" onclick="openFilters()" title="Filters">🎚️</button>
+            <button class="btn wide" onclick="toggleView()"><span id="viewIcon">🗺️</span></button>
+            <button class="btn" onclick="openAddBathroom()" title="Add Bathroom">➕</button>
+            <button class="btn" onclick="refresh()" title="Refresh">🔄</button>
+        </div>
+    </div>
+
+    <!-- PROFILE MODAL -->
+    <div class="modal" id="profileModal" onclick="closeModalOnBackdrop(event, 'profileModal')">
+        <div class="modal-content" style="width: 90%; max-width: 400px;" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Your Profile</h2>
+                <button class="close-btn" onclick="closeProfile()">✕</button>
+            </div>
+
+            <div class="level-card">
+                <div style="font-size: 60px; margin-bottom: 12px;">🚽</div>
+                <h3 style="font-size: 24px; margin-bottom: 8px;">Bathroom Scout</h3>
+                <p style="font-size: 16px; opacity: 0.8; margin-bottom: 4px;">Level 2</p>
+                <p style="font-size: 14px; font-weight: 600; color: #007AFF;"><span id="profilePoints">250</span> / 500 points</p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 50%;"></div>
+                </div>
+                <div style="display: flex; gap: 24px; justify-content: center; margin-top: 20px;">
+                    <div>
+                        <div style="font-size: 28px; font-weight: bold; color: #4CAF50;">85</div>
+                        <small style="opacity: 0.7;">Trust Score</small>
+                    </div>
+                    <div>
+                        <div style="font-size: 28px; font-weight: bold; color: #2196F3;" id="profileReports">42</div>
+                        <small style="opacity: 0.7;">Reports</small>
+                    </div>
+                    <div>
+                        <div style="font-size: 28px; font-weight: bold; color: #FF9500;">3</div>
+                        <small style="opacity: 0.7;">Badges</small>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin-bottom: 12px;">Your Contributions</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div style="font-size: 36px; margin-bottom: 8px;">🆕</div>
+                    <div style="font-size: 24px; font-weight: bold; margin-bottom: 4px;" id="bathroomsAdded">5</div>
+                    <div style="font-size: 12px; opacity: 0.7;">Bathrooms Added</div>
+                </div>
+                <div class="stat-card">
+                    <div style="font-size: 36px; margin-bottom: 8px;">🔑</div>
+                    <div style="font-size: 24px; font-weight: bold; margin-bottom: 4px;">12</div>
+                    <div style="font-size: 12px; opacity: 0.7;">Codes Shared</div>
+                </div>
+                <div class="stat-card">
+                    <div style="font-size: 36px; margin-bottom: 8px;">📸</div>
+                    <div style="font-size: 24px; font-weight: bold; margin-bottom: 4px;">8</div>
+                    <div style="font-size: 12px; opacity: 0.7;">Photos</div>
+                </div>
+                <div class="stat-card">
+                    <div style="font-size: 36px; margin-bottom: 8px;">⭐</div>
+                    <div style="font-size: 24px; font-weight: bold; margin-bottom: 4px;">17</div>
+                    <div style="font-size: 12px; opacity: 0.7;">Reviews</div>
+                </div>
+            </div>
+
+            <h3 style="margin: 24px 0 12px;">Badges Earned</h3>
+            <div class="badges-grid">
+                <div class="badge">
+                    <div style="font-size: 32px; margin-bottom: 4px;">🎯</div>
+                    <div style="font-size: 11px; font-weight: 600;">First Report</div>
+                </div>
+                <div class="badge">
+                    <div style="font-size: 32px; margin-bottom: 4px;">🗝️</div>
+                    <div style="font-size: 11px; font-weight: 600;">Code Master</div>
+                </div>
+                <div class="badge">
+                    <div style="font-size: 32px; margin-bottom: 4px;">📍</div>
+                    <div style="font-size: 11px; font-weight: 600;">Explorer</div>
+                </div>
+                <div class="badge locked">
+                    <div style="font-size: 32px; margin-bottom: 4px;">👑</div>
+                    <div style="font-size: 11px; font-weight: 600;">Community Hero</div>
+                </div>
+                <div class="badge locked">
+                    <div style="font-size: 32px; margin-bottom: 4px;">🏆</div>
+                    <div style="font-size: 11px; font-weight: 600;">100 Club</div>
+                </div>
+                <div class="badge locked">
+                    <div style="font-size: 32px; margin-bottom: 4px;">⚡</div>
+                    <div style="font-size: 11px; font-weight: 600;">Speed Scout</div>
+                </div>
+            </div>
+
+            <div class="privacy-box">
+                <h4 style="display: flex; align-items: center; gap: 8px;"><span>🔒</span> Privacy First</h4>
+                <ul style="font-size: 13px; opacity: 0.9;">
+                    <li>✓ No account required</li>
+                    <li>✓ All data stored locally on your device</li>
+                    <li>✓ Zero tracking or analytics</li>
+                    <li>✓ Fully anonymous contributions</li>
+                    <li>✓ Your data never leaves your phone</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- BATHROOM DETAIL MODAL -->
+    <div class="modal" id="detailModal" onclick="closeModalOnBackdrop(event, 'detailModal')">
+        <div class="modal-content" style="width: 90%; max-width: 400px;" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 id="detailName">Bathroom Details</h2>
+                <button class="close-btn" onclick="closeDetail()">✕</button>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+                <div style="font-size: 48px;">💧</div>
+                <div style="flex: 1;">
+                    <div style="margin-bottom: 4px;" id="detailRating">⭐⭐⭐⭐⭐ 4.8</div>
+                    <div style="font-size: 14px; color: #007AFF; font-weight: 500;" id="detailDistance">0.2 mi away</div>
+                    <div style="font-size: 13px; opacity: 0.7; margin-top: 4px;" id="detailType">Cafe</div>
+                </div>
+                <button style="font-size: 32px; background: none; border: none; cursor: pointer;" onclick="toggleFavorite()">
+                    <span id="favoriteIcon">☆</span>
+                </button>
+            </div>
+
+            <div style="display: flex; gap: 12px; margin-bottom: 24px;">
+                <button onclick="openReports()" style="flex: 1; padding: 14px; background: linear-gradient(135deg, rgba(255,149,0,0.15), rgba(255,149,0,0.1)); border: 1px solid rgba(255,149,0,0.3); border-radius: 12px; font-weight: 600; cursor: pointer;">
+                    📢 Report Issue
+                </button>
+                <button style="flex: 1; padding: 14px; background: linear-gradient(135deg, rgba(0,122,255,0.15), rgba(0,122,255,0.1)); border: 1px solid rgba(0,122,255,0.3); border-radius: 12px; font-weight: 600; cursor: pointer;">
+                    🧭 Directions
+                </button>
+            </div>
+
+            <h3 style="margin-bottom: 12px;">Live Community Reports</h3>
+            <div style="background: rgba(0,0,0,0.05); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                    <span style="font-size: 28px;">✨</span>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; margin-bottom: 2px;">Very Clean!</div>
+                        <div style="font-size: 12px; opacity: 0.7;">2 min ago • Verified by community ✓</div>
+                    </div>
+                    <button style="background: none; border: none; font-size: 18px; cursor: pointer;">👍 5</button>
+                    <button style="background: none; border: none; font-size: 18px; cursor: pointer;">❤️ 3</button>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 28px;">🚪</span>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; margin-bottom: 2px;">Door code: 1234</div>
+                        <div style="font-size: 12px; opacity: 0.7;">15 min ago • +20 points earned</div>
+                    </div>
+                    <button style="background: none; border: none; font-size: 18px; cursor: pointer;">👍 12</button>
+                    <button style="background: none; border: none; font-size: 18px; cursor: pointer;">❤️ 8</button>
+                </div>
+            </div>
+
+            <h3 style="margin-bottom: 12px;">Details</h3>
+            <div style="background: rgba(0,0,0,0.03); border-radius: 12px; padding: 16px; margin-bottom: 20px;" id="detailDetails">
+                <div style="margin-bottom: 10px;">🕐 <strong>Hours:</strong> 6:00 AM - 9:00 PM</div>
+                <div style="margin-bottom: 10px;">🚗 <strong>Parking:</strong> Easy street parking</div>
+                <div style="margin-bottom: 10px;">♿ <strong>Accessible:</strong> Yes, wheelchair accessible</div>
+                <div style="margin-bottom: 10px;">🚼 <strong>Baby Changing:</strong> Available</div>
+                <div>🚻 <strong>Type:</strong> Gender neutral available</div>
+            </div>
+
+            <h3 style="margin-bottom: 12px;">Access</h3>
+            <div style="background: rgba(0,122,255,0.1); border: 1px solid rgba(0,122,255,0.3); border-radius: 12px; padding: 16px;">
+                <div style="margin-bottom: 8px;">🆓 <strong>Free to use</strong></div>
+                <div style="margin-bottom: 8px;">🔑 <strong>Code required:</strong> Ask staff or check reports</div>
+                <div>🛒 <strong>Purchase required:</strong> No</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILTER MODAL -->
+    <div class="modal" id="filterModal" onclick="closeModalOnBackdrop(event, 'filterModal')">
+        <div class="modal-content" style="width: 90%; max-width: 400px;" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Filters</h2>
+                <button class="close-btn" onclick="closeFilters()">✕</button>
+            </div>
+
+            <div class="filter-section">
+                <h3>Accessibility</h3>
+                <div class="filter-toggle" onclick="toggleFilter('wheelchair')">
+                    <span>♿ Wheelchair Accessible</span>
+                    <div class="toggle-switch" id="filter-wheelchair"></div>
+                </div>
+                <div class="filter-toggle" onclick="toggleFilter('babyChanging')">
+                    <span>🚼 Baby Changing Station</span>
+                    <div class="toggle-switch" id="filter-babyChanging"></div>
+                </div>
+                <div class="filter-toggle" onclick="toggleFilter('genderNeutral')">
+                    <span>🚻 Gender Neutral</span>
+                    <div class="toggle-switch" id="filter-genderNeutral"></div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <h3>Minimum Rating</h3>
+                <div class="rating-selector">
+                    <div class="rating-btn" id="rating-0" onclick="setRating(0)">Any</div>
+                    <div class="rating-btn" id="rating-3" onclick="setRating(3)">⭐ 3+</div>
+                    <div class="rating-btn" id="rating-4" onclick="setRating(4)">⭐ 4+</div>
+                    <div class="rating-btn" id="rating-4.5" onclick="setRating(4.5)">⭐ 4.5+</div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <h3>Distance: <span id="distanceValue">2.0</span> miles</h3>
+                <input type="range" class="distance-slider" min="0.5" max="10" step="0.5" value="2"
+                       oninput="updateDistance(this.value)">
+            </div>
+
+            <div class="filter-section">
+                <h3>Other Filters</h3>
+                <div class="filter-toggle" onclick="toggleFilter('favorites')">
+                    <span>⭐ Favorites Only</span>
+                    <div class="toggle-switch" id="filter-favorites"></div>
+                </div>
+                <div class="filter-toggle" onclick="toggleFilter('freeAccess')">
+                    <span>🆓 Free Access Only</span>
+                    <div class="toggle-switch" id="filter-freeAccess"></div>
+                </div>
+                <div class="filter-toggle" onclick="toggleFilter('openNow')">
+                    <span>🕐 Open Now</span>
+                    <div class="toggle-switch" id="filter-openNow"></div>
+                </div>
+            </div>
+
+            <button class="submit-btn" onclick="applyFilters()">Apply Filters</button>
+            <button class="submit-btn" onclick="clearFilters()" style="background: rgba(0,0,0,0.1); color: inherit; margin-top: 12px;">Clear All Filters</button>
+        </div>
+    </div>
+
+    <!-- REPORT MODAL -->
+    <div class="modal" id="reportModal" onclick="closeModalOnBackdrop(event, 'reportModal')">
+        <div class="modal-content" style="width: 90%; max-width: 400px;" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Quick Report</h2>
+                <button class="close-btn" onclick="closeReports()">✕</button>
+            </div>
+            <p style="margin-bottom: 20px; opacity: 0.8;">Help the community - what's the status of this bathroom?</p>
+            <div class="report-grid">
+                <div class="report-btn" onclick="submitReport('clean')">
+                    <div style="font-size: 48px; margin-bottom: 8px;">✨</div>
+                    <div style="font-weight: 600;">Clean</div>
+                    <div style="font-size: 11px; opacity: 0.7; margin-top: 4px;">+10 points</div>
+                </div>
+                <div class="report-btn" onclick="submitReport('dirty')">
+                    <div style="font-size: 48px; margin-bottom: 8px;">⚠️</div>
+                    <div style="font-weight: 600;">Dirty</div>
+                    <div style="font-size: 11px; opacity: 0.7; margin-top: 4px;">+10 points</div>
+                </div>
+                <div class="report-btn" onclick="submitReport('broken')">
+                    <div style="font-size: 48px; margin-bottom: 8px;">🚫</div>
+                    <div style="font-weight: 600;">Out of Order</div>
+                    <div style="font-size: 11px; opacity: 0.7; margin-top: 4px;">+15 points</div>
+                </div>
+                <div class="report-btn" onclick="submitReport('no-paper')">
+                    <div style="font-size: 48px; margin-bottom: 8px;">🧻</div>
+                    <div style="font-weight: 600;">No Paper</div>
+                    <div style="font-size: 11px; opacity: 0.7; margin-top: 4px;">+10 points</div>
+                </div>
+                <div class="report-btn" onclick="submitReportDoorCode()">
+                    <div style="font-size: 48px; margin-bottom: 8px;">🔑</div>
+                    <div style="font-weight: 600;">Add Door Code</div>
+                    <div style="font-size: 11px; opacity: 0.7; margin-top: 4px;">+20 points</div>
+                </div>
+                <div class="report-btn" onclick="submitReport('photo')">
+                    <div style="font-size: 48px; margin-bottom: 8px;">📸</div>
+                    <div style="font-weight: 600;">Add Photo</div>
+                    <div style="font-size: 11px; opacity: 0.7; margin-top: 4px;">+8 points</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD BATHROOM MODAL -->
+    <div class="modal" id="addBathroomModal" onclick="closeModalOnBackdrop(event, 'addBathroomModal')">
+        <div class="modal-content" style="width: 90%; max-width: 400px;" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Add New Bathroom</h2>
+                <button class="close-btn" onclick="closeAddBathroom()">✕</button>
+            </div>
+            <form onsubmit="submitNewBathroom(event)">
+                <div class="form-group">
+                    <label>Business Name *</label>
+                    <input type="text" id="newBathroomName" placeholder="e.g., Starbucks" required>
+                </div>
+                <div class="form-group">
+                    <label>Type *</label>
+                    <input type="text" id="newBathroomType" placeholder="e.g., Cafe, Restaurant, Park" required>
+                </div>
+                <div class="form-group">
+                    <label>📍 Location</label>
+                    <input type="text" placeholder="Using current location..." disabled value="Current Location">
+                </div>
+                <div class="form-group">
+                    <label>Rating (optional)</label>
+                    <div class="rating-selector">
+                        <div class="rating-btn" onclick="selectNewRating(1); event.preventDefault()">⭐ 1</div>
+                        <div class="rating-btn" onclick="selectNewRating(2); event.preventDefault()">⭐ 2</div>
+                        <div class="rating-btn" onclick="selectNewRating(3); event.preventDefault()">⭐ 3</div>
+                        <div class="rating-btn" onclick="selectNewRating(4); event.preventDefault()">⭐ 4</div>
+                        <div class="rating-btn" onclick="selectNewRating(5); event.preventDefault()">⭐ 5</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Additional Notes (optional)</label>
+                    <textarea rows="3" id="newBathroomNotes" placeholder="Access code, hours, accessibility features..."></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Add Bathroom (+15 points)</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Data - More realistic bathroom locations
+        let bathrooms = [
+            { id: 1, name: "Starbucks Coffee", type: "Cafe", distanceVal: 0.2, rating: 4.8, favorite: true, liveReports: 2, lat: 45, lng: 30, wheelchair: true, babyChanging: true, genderNeutral: true, freeAccess: false },
+            { id: 2, name: "Central Park Restroom", type: "Public Park", distanceVal: 0.4, rating: 3.5, favorite: false, liveReports: 0, lat: 30, lng: 50, wheelchair: true, babyChanging: false, genderNeutral: false, freeAccess: true },
+            { id: 3, name: "McDonald's", type: "Fast Food", distanceVal: 0.5, rating: 4.2, favorite: false, liveReports: 0, lat: 60, lng: 40, wheelchair: true, babyChanging: true, genderNeutral: false, freeAccess: false },
+            { id: 4, name: "City Library", type: "Library", distanceVal: 0.7, rating: 4.6, favorite: false, liveReports: 0, lat: 70, lng: 70, wheelchair: true, babyChanging: true, genderNeutral: true, freeAccess: true },
+            { id: 5, name: "Target", type: "Retail", distanceVal: 0.9, rating: 4.3, favorite: false, liveReports: 1, lat: 40, lng: 20, wheelchair: true, babyChanging: true, genderNeutral: false, freeAccess: true },
+            { id: 6, name: "Whole Foods", type: "Grocery", distanceVal: 1.1, rating: 4.7, favorite: true, liveReports: 0, lat: 25, lng: 65, wheelchair: true, babyChanging: true, genderNeutral: true, freeAccess: true },
+            { id: 7, name: "Panera Bread", type: "Cafe", distanceVal: 1.3, rating: 4.4, favorite: false, liveReports: 0, lat: 55, lng: 25, wheelchair: true, babyChanging: false, genderNeutral: false, freeAccess: false },
+            { id: 8, name: "Union Station", type: "Transit", distanceVal: 1.5, rating: 3.8, favorite: false, liveReports: 2, lat: 35, lng: 75, wheelchair: true, babyChanging: true, genderNeutral: true, freeAccess: true },
+            { id: 9, name: "Barnes & Noble", type: "Bookstore", distanceVal: 1.7, rating: 4.5, favorite: false, liveReports: 0, lat: 65, lng: 55, wheelchair: true, babyChanging: true, genderNeutral: false, freeAccess: true },
+            { id: 10, name: "Shopping Mall Food Court", type: "Mall", distanceVal: 1.9, rating: 4.0, favorite: false, liveReports: 1, lat: 50, lng: 35, wheelchair: true, babyChanging: true, genderNeutral: false, freeAccess: true },
+            { id: 11, name: "Chipotle", type: "Fast Food", distanceVal: 2.1, rating: 4.1, favorite: false, liveReports: 0, lat: 20, lng: 45, wheelchair: false, babyChanging: false, genderNeutral: false, freeAccess: false },
+            { id: 12, name: "Community Center", type: "Public", distanceVal: 2.3, rating: 4.4, favorite: false, liveReports: 0, lat: 75, lng: 60, wheelchair: true, babyChanging: true, genderNeutral: true, freeAccess: true },
+        ];
+
+        let isDarkMode = false;
+        let emergencyMode = false;
+        let isMapView = false;
+        let currentBathroom = null;
+        let userStats = {
+            points: 250,
+            reports: 42,
+            bathroomsAdded: 5
+        };
+
+        // Filter state
+        let activeFilters = {
+            wheelchair: false,
+            babyChanging: false,
+            genderNeutral: false,
+            minRating: 0,
+            maxDistance: 2.0,
+            favorites: false,
+            freeAccess: false,
+            openNow: false
+        };
+
+        // Initialize
+        function init() {
+            updateBathroomDistances();
+            renderBathrooms();
+            renderMapMarkers();
+            updateFilterUI();
+        }
+
+        // Update distances based on filter distance
+        function updateBathroomDistances() {
+            bathrooms.forEach(b => {
+                b.distance = b.distanceVal.toFixed(1) + ' mi';
+            });
+        }
+
+        // Get filtered bathrooms
+        function getFilteredBathrooms() {
+            let filtered = [...bathrooms];
+
+            // Apply filters
+            if (activeFilters.wheelchair) {
+                filtered = filtered.filter(b => b.wheelchair);
+            }
+            if (activeFilters.babyChanging) {
+                filtered = filtered.filter(b => b.babyChanging);
+            }
+            if (activeFilters.genderNeutral) {
+                filtered = filtered.filter(b => b.genderNeutral);
+            }
+            if (activeFilters.minRating > 0) {
+                filtered = filtered.filter(b => b.rating >= activeFilters.minRating);
+            }
+            if (activeFilters.maxDistance > 0) {
+                filtered = filtered.filter(b => b.distanceVal <= activeFilters.maxDistance);
+            }
+            if (activeFilters.favorites) {
+                filtered = filtered.filter(b => b.favorite);
+            }
+            if (activeFilters.freeAccess) {
+                filtered = filtered.filter(b => b.freeAccess);
+            }
+
+            // Sort by distance if emergency mode
+            if (emergencyMode) {
+                filtered.sort((a, b) => a.distanceVal - b.distanceVal);
+            }
+
+            return filtered;
+        }
+
+        // Render bathrooms list
+        function renderBathrooms() {
+            const listView = document.getElementById('listView');
+            const filtered = getFilteredBathrooms();
+
+            listView.innerHTML = '';
+
+            if (filtered.length === 0) {
+                listView.innerHTML = '<div class="no-results"><div style="font-size: 48px; margin-bottom: 16px;">🔍</div><div style="font-size: 18px; font-weight: 600;">No bathrooms found</div><div style="margin-top: 8px; font-size: 14px;">Try adjusting your filters</div></div>';
+                return;
+            }
+
+            filtered.forEach(b => {
+                const card = document.createElement('div');
+                card.className = 'bathroom-card';
+                card.onclick = () => openDetail(b);
+                const stars = '⭐'.repeat(Math.floor(b.rating));
+                const fav = b.favorite ? '<span style="position: absolute; top: -4px; right: -4px; font-size: 16px;">⭐</span>' : '';
+                const report = b.liveReports > 0 ? `<div class="live-report">🔴 ${b.liveReports} live report${b.liveReports > 1 ? 's' : ''} • ✨ Clean${b.liveReports > 1 ? ', 🔑 Code shared' : ''}</div>` : '';
+                card.innerHTML = `
+                    <div style="display: flex; align-items: center; margin-bottom: 14px;">
+                        <div class="card-icon">💧${fav}</div>
+                        <div style="flex: 1; margin-left: 14px;">
+                            <div style="font-size: 18px; font-weight: 600; margin-bottom: 4px;">${b.name}</div>
+                            <div style="font-size: 14px; opacity: 0.7; margin-bottom: 4px;">${b.type}</div>
+                            <div style="font-size: 13px;">${stars} ${b.rating}</div>
+                        </div>
+                        <div style="font-size: 18px; font-weight: bold; color: #007AFF;">${b.distance}</div>
+                    </div>
+                    ${report}
+                    <div style="height: 1px; background: rgba(0,0,0,0.1); margin: 12px 0;"></div>
+                    <div style="font-size: 13px; opacity: 0.7;">🕐 6 AM - 9 PM  •  🚗 ${b.distanceVal < 0.5 ? 'Easy' : 'Street'}  •  ${b.wheelchair ? '♿ Accessible' : '⚠️ No wheelchair access'}</div>
+                `;
+                listView.appendChild(card);
+            });
+
+            updateActiveFiltersBar();
+        }
+
+        // Render map markers
+        function renderMapMarkers() {
+            const mapView = document.getElementById('mapView');
+            const filtered = getFilteredBathrooms();
+
+            // Remove old markers (keep SVG and user location)
+            const oldMarkers = mapView.querySelectorAll('.map-marker');
+            oldMarkers.forEach(m => m.remove());
+
+            filtered.forEach(b => {
+                const marker = document.createElement('div');
+                marker.className = 'map-marker';
+                if (b.favorite) marker.classList.add('favorite');
+                if (b.liveReports > 0) marker.classList.add('active-report');
+                marker.style.left = b.lng + '%';
+                marker.style.top = b.lat + '%';
+                marker.innerHTML = '💧';
+                marker.onclick = () => openDetail(b);
+                marker.title = b.name;
+                mapView.appendChild(marker);
+            });
+        }
+
+        // Update active filters bar
+        function updateActiveFiltersBar() {
+            const bar = document.getElementById('activeFiltersBar');
+            const hasActiveFilters = Object.values(activeFilters).some((v, i) => {
+                if (i === 3) return v > 0; // minRating
+                if (i === 4) return v < 2.0; // maxDistance
+                return v === true;
+            });
+
+            if (!hasActiveFilters) {
+                bar.classList.remove('visible');
+                return;
+            }
+
+            bar.classList.add('visible');
+            bar.innerHTML = '<span style="font-weight: 600; font-size: 12px;">Active Filters:</span>';
+
+            if (activeFilters.wheelchair) addFilterChip(bar, '♿ Wheelchair', 'wheelchair');
+            if (activeFilters.babyChanging) addFilterChip(bar, '🚼 Baby Changing', 'babyChanging');
+            if (activeFilters.genderNeutral) addFilterChip(bar, '🚻 Gender Neutral', 'genderNeutral');
+            if (activeFilters.minRating > 0) addFilterChip(bar, `⭐ ${activeFilters.minRating}+`, 'rating');
+            if (activeFilters.maxDistance < 2.0) addFilterChip(bar, `📍 ${activeFilters.maxDistance} mi`, 'distance');
+            if (activeFilters.favorites) addFilterChip(bar, '⭐ Favorites', 'favorites');
+            if (activeFilters.freeAccess) addFilterChip(bar, '🆓 Free', 'freeAccess');
+        }
+
+        function addFilterChip(container, text, id) {
+            const chip = document.createElement('div');
+            chip.className = 'filter-chip';
+            chip.innerHTML = `${text} <span class="filter-chip-close" onclick="removeFilter('${id}')">✕</span>`;
+            container.appendChild(chip);
+        }
+
+        function removeFilter(id) {
+            if (id === 'wheelchair') activeFilters.wheelchair = false;
+            else if (id === 'babyChanging') activeFilters.babyChanging = false;
+            else if (id === 'genderNeutral') activeFilters.genderNeutral = false;
+            else if (id === 'rating') activeFilters.minRating = 0;
+            else if (id === 'distance') activeFilters.maxDistance = 2.0;
+            else if (id === 'favorites') activeFilters.favorites = false;
+            else if (id === 'freeAccess') activeFilters.freeAccess = false;
+
+            updateFilterUI();
+            renderBathrooms();
+            renderMapMarkers();
+        }
+
+        // Dark mode
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark-mode');
+            document.getElementById('darkModeIcon').textContent = isDarkMode ? '🌙' : '☀️';
+        }
+
+        // Emergency mode
+        function toggleEmergency() {
+            emergencyMode = !emergencyMode;
+            document.getElementById('emergencyBtn').classList.toggle('active');
+            document.getElementById('emergencyBanner').classList.toggle('active');
+            renderBathrooms();
+            renderMapMarkers();
+        }
+
+        // View toggle
+        function toggleView() {
+            isMapView = !isMapView;
+            const listView = document.getElementById('listView');
+            const mapView = document.getElementById('mapView');
+            const icon = document.getElementById('viewIcon');
+
+            if (isMapView) {
+                listView.classList.add('hidden');
+                mapView.classList.add('active');
+                icon.textContent = '📋';
+            } else {
+                listView.classList.remove('hidden');
+                mapView.classList.remove('active');
+                icon.textContent = '🗺️';
+            }
+        }
+
+        // Refresh
+        function refresh() {
+            renderBathrooms();
+            renderMapMarkers();
+        }
+
+        // Update points display
+        function updatePoints(added) {
+            userStats.points += added;
+            userStats.reports += 1;
+            document.getElementById('userPoints').textContent = userStats.points;
+            document.getElementById('profilePoints').textContent = userStats.points;
+            document.getElementById('profileReports').textContent = userStats.reports;
+
+            // Update progress bar
+            const progress = (userStats.points % 500) / 500 * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        // Profile
+        function openProfile() {
+            document.getElementById('profilePoints').textContent = userStats.points;
+            document.getElementById('profileReports').textContent = userStats.reports;
+            document.getElementById('bathroomsAdded').textContent = userStats.bathroomsAdded;
+            const progress = (userStats.points % 500) / 500 * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('profileModal').classList.add('active');
+        }
+        function closeProfile() {
+            document.getElementById('profileModal').classList.remove('active');
+        }
+
+        // Filters
+        function openFilters() {
+            document.getElementById('filterModal').classList.add('active');
+        }
+        function closeFilters() {
+            document.getElementById('filterModal').classList.remove('active');
+        }
+
+        function updateFilterUI() {
+            // Update toggle switches
+            document.getElementById('filter-wheelchair').classList.toggle('on', activeFilters.wheelchair);
+            document.getElementById('filter-babyChanging').classList.toggle('on', activeFilters.babyChanging);
+            document.getElementById('filter-genderNeutral').classList.toggle('on', activeFilters.genderNeutral);
+            document.getElementById('filter-favorites').classList.toggle('on', activeFilters.favorites);
+            document.getElementById('filter-freeAccess').classList.toggle('on', activeFilters.freeAccess);
+            document.getElementById('filter-openNow').classList.toggle('on', activeFilters.openNow);
+
+            // Update rating buttons
+            document.querySelectorAll('.rating-btn').forEach(btn => btn.classList.remove('selected'));
+            const ratingBtn = document.getElementById('rating-' + activeFilters.minRating);
+            if (ratingBtn) ratingBtn.classList.add('selected');
+
+            // Update distance display
+            document.getElementById('distanceValue').textContent = activeFilters.maxDistance.toFixed(1);
+        }
+
+        function toggleFilter(filterId) {
+            const toggle = document.getElementById('filter-' + filterId);
+            toggle.classList.toggle('on');
+            activeFilters[filterId] = toggle.classList.contains('on');
+        }
+
+        function setRating(rating) {
+            document.querySelectorAll('.rating-btn').forEach(btn => btn.classList.remove('selected'));
+            event.target.classList.add('selected');
+            activeFilters.minRating = rating;
+        }
+
+        function updateDistance(value) {
+            document.getElementById('distanceValue').textContent = value;
+            activeFilters.maxDistance = parseFloat(value);
+        }
+
+        function applyFilters() {
+            closeFilters();
+            renderBathrooms();
+            renderMapMarkers();
+        }
+
+        function clearFilters() {
+            activeFilters = {
+                wheelchair: false,
+                babyChanging: false,
+                genderNeutral: false,
+                minRating: 0,
+                maxDistance: 2.0,
+                favorites: false,
+                freeAccess: false,
+                openNow: false
+            };
+            updateFilterUI();
+            renderBathrooms();
+            renderMapMarkers();
+        }
+
+        // Bathroom details
+        function openDetail(bathroom) {
+            currentBathroom = bathroom;
+            document.getElementById('detailName').textContent = bathroom.name;
+            document.getElementById('detailRating').textContent = '⭐'.repeat(Math.floor(bathroom.rating)) + ' ' + bathroom.rating;
+            document.getElementById('detailDistance').textContent = bathroom.distance + ' away';
+            document.getElementById('detailType').textContent = bathroom.type;
+            document.getElementById('favoriteIcon').textContent = bathroom.favorite ? '⭐' : '☆';
+            document.getElementById('detailModal').classList.add('active');
+        }
+
+        function closeDetail() {
+            document.getElementById('detailModal').classList.remove('active');
+        }
+
+        function toggleFavorite() {
+            if (currentBathroom) {
+                currentBathroom.favorite = !currentBathroom.favorite;
+                document.getElementById('favoriteIcon').textContent = currentBathroom.favorite ? '⭐' : '☆';
+                renderBathrooms();
+                renderMapMarkers();
+            }
+        }
+
+        // Reports
+        function openReports() {
+            document.getElementById('reportModal').classList.add('active');
+        }
+
+        function closeReports() {
+            document.getElementById('reportModal').classList.remove('active');
+        }
+
+        function submitReport(type) {
+            const points = type === 'broken' ? 15 : type === 'photo' ? 8 : 10;
+            alert(`✅ Report submitted: ${type}\n\n+${points} points earned! 🎉\n\nThank you for helping the community!`);
+            updatePoints(points);
+            closeReports();
+            closeDetail();
+        }
+
+        function submitReportDoorCode() {
+            const code = prompt('Enter the door code or access instructions:');
+            if (code && code.trim()) {
+                alert(`✅ Door code shared: ${code}\n\n+20 points earned! 🎉\n\nThis is the most valuable type of report!\n\nThank you for helping the community!`);
+                updatePoints(20);
+                closeReports();
+                closeDetail();
+            }
+        }
+
+        // Add bathroom
+        function openAddBathroom() {
+            document.getElementById('addBathroomModal').classList.add('active');
+        }
+
+        function closeAddBathroom() {
+            document.getElementById('addBathroomModal').classList.remove('active');
+        }
+
+        function selectNewRating(rating) {
+            console.log('Selected rating:', rating);
+        }
+
+        function submitNewBathroom(e) {
+            e.preventDefault();
+            const name = document.getElementById('newBathroomName').value;
+            const type = document.getElementById('newBathroomType').value;
+
+            // Add new bathroom to the list
+            const newId = Math.max(...bathrooms.map(b => b.id)) + 1;
+            const newBathroom = {
+                id: newId,
+                name: name,
+                type: type,
+                distanceVal: 0.1,
+                distance: '0.1 mi',
+                rating: 4.0,
+                favorite: false,
+                liveReports: 0,
+                lat: 50 + Math.random() * 10,
+                lng: 50 + Math.random() * 10,
+                wheelchair: true,
+                babyChanging: false,
+                genderNeutral: false,
+                freeAccess: true
+            };
+
+            bathrooms.unshift(newBathroom);
+            userStats.bathroomsAdded += 1;
+
+            alert(`🎉 New bathroom added: ${name}\n\n+15 points earned!\n\nThank you for contributing to the community!`);
+            updatePoints(15);
+
+            // Reset form
+            e.target.reset();
+            closeAddBathroom();
+            renderBathrooms();
+            renderMapMarkers();
+        }
+
+        // Close modal on backdrop click
+        function closeModalOnBackdrop(event, modalId) {
+            if (event.target.classList.contains('modal')) {
+                document.getElementById(modalId).classList.remove('active');
+            }
+        }
+
+        // Initialize app
+        init();
+    </script>
+</body>
+</html>
