@@ -1,49 +1,197 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Coming Soon</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loo - Privacy-First Bathroom Finder</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            background: linear-gradient(135deg, #e0ecfa 0%, #c8daf2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 72px;
+            margin-bottom: 20px;
+        }
+
+        .tagline {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #1a3d66 0%, #2d5a8c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 40px;
+        }
+
+        .demos {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .demo-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .demo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+        }
+
+        .demo-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .demo-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .demo-desc {
+            font-size: 14px;
+            opacity: 0.7;
+            line-height: 1.5;
+        }
+
+        .features {
+            background: rgba(255,255,255,0.8);
+            border-radius: 16px;
+            padding: 30px;
+            margin-top: 50px;
+        }
+
+        .features h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            text-align: left;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .github-link {
+            margin-top: 40px;
+            font-size: 14px;
+            opacity: 0.6;
+        }
+
+        .github-link a {
+            color: #007AFF;
+            text-decoration: none;
+        }
+    </style>
 </head>
-
 <body>
-  <header>
-    <h1>Coming Soon</h1>
-    <nav>
-      <ul>
-        <li><a href="#">Home</a></li>
-        <li><a href="#">About</a></li>
-        <li><a href="#">Services</a></li>
-        <li><a href="#">Contact</a></li>
-      </ul>
-    </nav>
-  </header>
+    <div class="container">
+        <h1>💧</h1>
+        <div class="tagline">Loo</div>
+        <div class="subtitle">The Waze of Bathroom Finding</div>
+        <p style="font-size: 16px; color: #666; max-width: 600px; margin: 0 auto;">
+            Privacy-first, community-driven bathroom finder with gamification,
+            real-time reports, and 100% free APIs. No tracking. No accounts. Just helpful.
+        </p>
 
-  <main>
-    <section class="section">
-      <div class="container">
-        <h2>Welcome</h2>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed lacinia ipsum vitae ex facilisis,
-          et eleifend lorem rutrum.</p>
-        <a href="#" class="btn">Learn More</a>
-      </div>
-    </section>
+        <div class="demos">
+            <a href="loo-demo-full.html" class="demo-card">
+                <div class="demo-icon">📊</div>
+                <div class="demo-title">Feature Showcase</div>
+                <div class="demo-desc">
+                    Complete visual guide showing all 5 levels, 7 badges, 13 report types,
+                    trust score system, and every feature built into the app.
+                </div>
+            </a>
 
-    <section class="section">
-      <div class="container">
-        <h2>About Us</h2>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed lacinia ipsum vitae ex facilisis,
-          et eleifend lorem rutrum.</p>
-        <a href="#" class="btn">Read More</a>
-      </div>
-    </section>
-  </main>
+            <a href="loo-demo.html" class="demo-card">
+                <div class="demo-icon">🎮</div>
+                <div class="demo-title">Interactive Demo</div>
+                <div class="demo-desc">
+                    Try the actual working app in your browser! Click around,
+                    submit reports, earn points, apply filters, and explore all features.
+                </div>
+            </a>
+        </div>
 
-  <footer>
-    <p>&copy; 2023 Your Website. All rights reserved.</p>
-  </footer>
+        <div class="features">
+            <h2>Why Loo?</h2>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <span style="font-size: 20px;">🔒</span>
+                    <span><strong>100% Private</strong> - No tracking, all local</span>
+                </div>
+                <div class="feature-item">
+                    <span style="font-size: 20px;">🆓</span>
+                    <span><strong>Completely Free</strong> - No ads, no subscriptions</span>
+                </div>
+                <div class="feature-item">
+                    <span style="font-size: 20px;">🎮</span>
+                    <span><strong>Gamified</strong> - Levels, badges, points</span>
+                </div>
+                <div class="feature-item">
+                    <span style="font-size: 20px;">👥</span>
+                    <span><strong>Community-Driven</strong> - Like Waze for bathrooms</span>
+                </div>
+                <div class="feature-item">
+                    <span style="font-size: 20px;">♿</span>
+                    <span><strong>Accessible</strong> - Wheelchair, baby changing info</span>
+                </div>
+                <div class="feature-item">
+                    <span style="font-size: 20px;">🚨</span>
+                    <span><strong>Emergency Mode</strong> - Find the closest ASAP</span>
+                </div>
+                <div class="feature-item">
+                    <span style="font-size: 20px;">🎨</span>
+                    <span><strong>Beautiful UI</strong> - Liquid Glass + Skeuomorphic</span>
+                </div>
+                <div class="feature-item">
+                    <span style="font-size: 20px;">⚡</span>
+                    <span><strong>Fast</strong> - Native Swift performance</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="github-link">
+            <p>Built with privacy, community, and compassion 💙</p>
+            <p style="margin-top: 10px;">🤖 Generated with <a href="https://claude.com/claude-code" target="_blank">Claude Code</a></p>
+        </div>
+    </div>
 </body>
-
 </html>
