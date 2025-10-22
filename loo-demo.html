@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Loo - Complete Demo (Waze-Style)</title>
+    <title>Loo - Privacy-First Bathroom Finder</title>
     <style>
         * {
             margin: 0;
@@ -24,6 +24,7 @@
 
         body.dark-mode {
             background: linear-gradient(135deg, #0d0d14 0%, #1e1e26 100%);
+            color: #ffffff;
         }
 
         .app-container {
@@ -77,6 +78,11 @@
             background: rgba(255,255,255,0.3);
             border-radius: 20px;
             cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .user-badge:active {
+            transform: scale(0.95);
         }
 
         body.dark-mode .user-badge {
@@ -84,15 +90,22 @@
         }
 
         .emergency-banner {
-            background: rgba(255,0,0,0.1);
-            padding: 8px 20px;
+            background: linear-gradient(90deg, rgba(255,0,0,0.15), rgba(255,100,0,0.15));
+            padding: 12px 20px;
             display: none;
             align-items: center;
             gap: 8px;
+            border-bottom: 1px solid rgba(255,0,0,0.3);
+            animation: urgent-pulse 2s ease-in-out infinite;
         }
 
         .emergency-banner.active {
             display: flex;
+        }
+
+        @keyframes urgent-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
 
         .content {
@@ -100,6 +113,83 @@
             padding: 20px;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
+        }
+
+        /* MAP VIEW */
+        .map-view {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #a8d5ff 0%, #7ab8ff 100%);
+            border-radius: 0;
+            overflow: hidden;
+            display: none;
+        }
+
+        .map-view.active {
+            display: block;
+        }
+
+        body.dark-mode .map-view {
+            background: linear-gradient(135deg, #1a2b3d 0%, #0f1923 100%);
+        }
+
+        .map-roads {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.3;
+        }
+
+        .map-marker {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: rgba(0,122,255,0.9);
+            border: 3px solid white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .map-marker:hover {
+            transform: scale(1.1);
+        }
+
+        .map-marker.favorite {
+            border-color: #FFD700;
+        }
+
+        .map-marker.active-report::after {
+            content: '🔴';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            font-size: 14px;
+        }
+
+        .user-location {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #007AFF;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 0 0 8px rgba(0,122,255,0.2);
+        }
+
+        /* LIST VIEW */
+        .list-view {
+            display: block;
+        }
+
+        .list-view.hidden {
+            display: none;
         }
 
         .bathroom-card {
@@ -111,6 +201,11 @@
             box-shadow: 0 8px 24px rgba(0,0,0,0.12);
             border: 1.5px solid rgba(255,255,255,0.6);
             cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .bathroom-card:active {
+            transform: scale(0.98);
         }
 
         body.dark-mode .bathroom-card {
@@ -128,6 +223,7 @@
             justify-content: center;
             font-size: 26px;
             position: relative;
+            box-shadow: 0 4px 12px rgba(0,122,255,0.3);
         }
 
         .live-report {
@@ -138,6 +234,11 @@
             margin: 12px 0;
             font-size: 12px;
             color: #ff9500;
+            font-weight: 500;
+        }
+
+        body.dark-mode .live-report {
+            background: rgba(255,149,0,0.2);
         }
 
         .control-panel {
@@ -147,6 +248,7 @@
             display: flex;
             gap: 12px;
             justify-content: center;
+            box-shadow: 0 -2px 20px rgba(0,0,0,0.1);
         }
 
         body.dark-mode .control-panel {
@@ -166,6 +268,11 @@
             cursor: pointer;
             font-size: 20px;
             position: relative;
+            transition: transform 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
         }
 
         body.dark-mode .btn {
@@ -189,6 +296,7 @@
             width: 120px;
         }
 
+        /* MODALS */
         .modal {
             position: fixed;
             top: 0;
@@ -200,10 +308,17 @@
             align-items: center;
             justify-content: center;
             z-index: 1000;
+            backdrop-filter: blur(10px);
         }
 
         .modal.active {
             display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .modal-content {
@@ -212,12 +327,67 @@
             max-width: 90%;
             max-height: 80vh;
             overflow-y: auto;
-            padding: 20px;
+            padding: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         body.dark-mode .modal-content {
             background: #1e1e26;
             color: white;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .close-btn:hover {
+            opacity: 1;
+        }
+
+        /* PROFILE */
+        .level-card {
+            text-align: center;
+            padding: 24px;
+            background: linear-gradient(135deg, rgba(0,122,255,0.15), rgba(0,200,255,0.1));
+            border-radius: 16px;
+            margin-bottom: 24px;
+        }
+
+        body.dark-mode .level-card {
+            background: linear-gradient(135deg, rgba(0,122,255,0.2), rgba(0,200,255,0.15));
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #007AFF, #00C8FF);
+            transition: width 0.5s ease;
         }
 
         .stats-grid {
@@ -233,15 +403,216 @@
             border-radius: 12px;
             padding: 16px;
             text-align: center;
+            border: 1px solid rgba(255,255,255,0.3);
         }
 
         body.dark-mode .stat-card {
             background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .badges-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .badge {
+            background: rgba(255,255,255,0.5);
+            backdrop-filter: blur(20px);
+            border-radius: 12px;
+            padding: 16px 12px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .badge.locked {
+            opacity: 0.4;
+        }
+
+        body.dark-mode .badge {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* FILTERS */
+        .filter-section {
+            margin-bottom: 24px;
+        }
+
+        .filter-section h3 {
+            margin-bottom: 12px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .filter-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        body.dark-mode .filter-toggle {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .toggle-switch {
+            width: 50px;
+            height: 28px;
+            background: #ccc;
+            border-radius: 14px;
+            position: relative;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.on {
+            background: #007AFF;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s;
+        }
+
+        .toggle-switch.on::after {
+            left: 24px;
+        }
+
+        .rating-selector {
+            display: flex;
+            gap: 8px;
+            margin: 12px 0;
+        }
+
+        .rating-btn {
+            padding: 8px 16px;
+            background: rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .rating-btn.selected {
+            background: #007AFF;
+            color: white;
+            border-color: #007AFF;
+        }
+
+        body.dark-mode .rating-btn {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        .distance-slider {
+            width: 100%;
+            margin: 16px 0;
+        }
+
+        /* ADD BATHROOM */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 8px;
+            background: rgba(0,0,0,0.03);
+            font-family: inherit;
+        }
+
+        body.dark-mode .form-group input,
+        body.dark-mode .form-group textarea {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #007AFF, #00C8FF);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .submit-btn:active {
+            transform: scale(0.98);
+        }
+
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .report-btn {
+            background: rgba(255,255,255,0.5);
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .report-btn:active {
+            transform: scale(0.95);
+        }
+
+        body.dark-mode .report-btn {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        .privacy-box {
+            background: rgba(76,175,80,0.1);
+            border: 1px solid rgba(76,175,80,0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+
+        .privacy-box h4 {
+            margin-bottom: 12px;
+        }
+
+        .privacy-box ul {
+            list-style: none;
+            line-height: 1.8;
         }
     </style>
 </head>
 <body>
     <div class="app-container">
+        <!-- HEADER -->
         <div class="header">
             <div style="display: flex; align-items: center; gap: 8px;">
                 <div style="font-size: 28px;">💧</div>
@@ -249,220 +620,568 @@
             </div>
             <div class="user-badge" onclick="openProfile()">
                 <span id="userLevel">🚽</span>
-                <span id="userPoints">250</span>
+                <span id="userPoints" style="font-weight: 600; font-size: 14px;">250</span>
             </div>
             <button class="btn" style="width: 50px; height: 50px;" onclick="toggleDarkMode()">
                 <span id="darkModeIcon">☀️</span>
             </button>
         </div>
 
+        <!-- EMERGENCY BANNER -->
         <div class="emergency-banner" id="emergencyBanner">
-            <span style="color: #ff0000; font-weight: bold;">🚨 EMERGENCY MODE</span>
-            <span style="margin-left: auto; font-size: 12px;">Showing closest</span>
+            <span style="color: #ff0000; font-weight: bold; font-size: 16px;">🚨 EMERGENCY MODE</span>
+            <span style="margin-left: auto; font-size: 13px; opacity: 0.8;">Showing closest bathrooms</span>
         </div>
 
-        <div class="content" id="content"></div>
+        <!-- CONTENT AREA -->
+        <div class="content" id="content">
+            <!-- LIST VIEW -->
+            <div class="list-view" id="listView"></div>
 
+            <!-- MAP VIEW -->
+            <div class="map-view" id="mapView">
+                <svg class="map-roads" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="0" y1="200" x2="400" y2="200" stroke="rgba(0,0,0,0.2)" stroke-width="8"/>
+                    <line x1="0" y1="400" x2="400" y2="400" stroke="rgba(0,0,0,0.2)" stroke-width="8"/>
+                    <line x1="150" y1="0" x2="150" y2="600" stroke="rgba(0,0,0,0.2)" stroke-width="8"/>
+                    <line x1="280" y1="0" x2="280" y2="600" stroke="rgba(0,0,0,0.2)" stroke-width="8"/>
+                </svg>
+                <!-- User location -->
+                <div class="user-location" style="left: 50%; top: 50%;"></div>
+                <!-- Map markers will be added dynamically -->
+            </div>
+        </div>
+
+        <!-- CONTROL PANEL -->
         <div class="control-panel">
-            <button class="btn emergency" id="emergencyBtn" onclick="toggleEmergency()">⚡</button>
-            <button class="btn" onclick="openFilters()">🎚️</button>
-            <button class="btn wide" onclick="toggleView()"><span id="viewIcon">📋</span></button>
-            <button class="btn" onclick="refresh()">🔄</button>
+            <button class="btn emergency" id="emergencyBtn" onclick="toggleEmergency()" title="Emergency Mode">⚡</button>
+            <button class="btn" onclick="openFilters()" title="Filters">🎚️</button>
+            <button class="btn wide" onclick="toggleView()"><span id="viewIcon">🗺️</span></button>
+            <button class="btn" onclick="openAddBathroom()" title="Add Bathroom">➕</button>
+            <button class="btn" onclick="refresh()" title="Refresh">🔄</button>
         </div>
     </div>
 
+    <!-- PROFILE MODAL -->
     <div class="modal" id="profileModal">
         <div class="modal-content" style="width: 90%; max-width: 400px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+            <div class="modal-header">
                 <h2>Your Profile</h2>
-                <button onclick="closeProfile()" style="background:none; border:none; font-size: 24px; cursor: pointer;">✕</button>
+                <button class="close-btn" onclick="closeProfile()">✕</button>
             </div>
-            <div style="text-align: center; padding: 24px; background: rgba(0,122,255,0.1); border-radius: 16px; margin-bottom: 20px;">
+
+            <div class="level-card">
                 <div style="font-size: 60px; margin-bottom: 12px;">🚽</div>
-                <h3>Bathroom Scout</h3>
-                <p style="margin: 8px 0;">250 points</p>
-                <div style="display: flex; gap: 20px; justify-content: center; margin-top: 16px;">
+                <h3 style="font-size: 24px; margin-bottom: 8px;">Bathroom Scout</h3>
+                <p style="font-size: 16px; opacity: 0.8; margin-bottom: 4px;">Level 2</p>
+                <p style="font-size: 14px; font-weight: 600; color: #007AFF;">250 / 500 points</p>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 50%;"></div>
+                </div>
+                <div style="display: flex; gap: 24px; justify-content: center; margin-top: 20px;">
                     <div>
-                        <div style="font-size: 24px; font-weight: bold; color: #4CAF50;">85</div>
-                        <small>Trust Score</small>
+                        <div style="font-size: 28px; font-weight: bold; color: #4CAF50;">85</div>
+                        <small style="opacity: 0.7;">Trust Score</small>
                     </div>
                     <div>
-                        <div style="font-size: 24px; font-weight: bold; color: #2196F3;">42</div>
-                        <small>Reports</small>
+                        <div style="font-size: 28px; font-weight: bold; color: #2196F3;">42</div>
+                        <small style="opacity: 0.7;">Reports</small>
+                    </div>
+                    <div>
+                        <div style="font-size: 28px; font-weight: bold; color: #FF9500;">3</div>
+                        <small style="opacity: 0.7;">Badges</small>
                     </div>
                 </div>
             </div>
 
-            <h3>Your Contributions</h3>
+            <h3 style="margin-bottom: 12px;">Your Contributions</h3>
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div style="font-size: 32px;">🆕</div>
-                    <div style="font-size: 20px; font-weight: bold;">5</div>
-                    <div style="font-size: 12px;">Bathrooms Added</div>
+                    <div style="font-size: 36px; margin-bottom: 8px;">🆕</div>
+                    <div style="font-size: 24px; font-weight: bold; margin-bottom: 4px;">5</div>
+                    <div style="font-size: 12px; opacity: 0.7;">Bathrooms Added</div>
                 </div>
                 <div class="stat-card">
-                    <div style="font-size: 32px;">🔑</div>
-                    <div style="font-size: 20px; font-weight: bold;">12</div>
-                    <div style="font-size: 12px;">Codes Shared</div>
+                    <div style="font-size: 36px; margin-bottom: 8px;">🔑</div>
+                    <div style="font-size: 24px; font-weight: bold; margin-bottom: 4px;">12</div>
+                    <div style="font-size: 12px; opacity: 0.7;">Codes Shared</div>
                 </div>
                 <div class="stat-card">
-                    <div style="font-size: 32px;">📸</div>
-                    <div style="font-size: 20px; font-weight: bold;">8</div>
-                    <div style="font-size: 12px;">Photos</div>
+                    <div style="font-size: 36px; margin-bottom: 8px;">📸</div>
+                    <div style="font-size: 24px; font-weight: bold; margin-bottom: 4px;">8</div>
+                    <div style="font-size: 12px; opacity: 0.7;">Photos</div>
                 </div>
                 <div class="stat-card">
-                    <div style="font-size: 32px;">⭐</div>
-                    <div style="font-size: 20px; font-weight: bold;">17</div>
-                    <div style="font-size: 12px;">Reviews</div>
+                    <div style="font-size: 36px; margin-bottom: 8px;">⭐</div>
+                    <div style="font-size: 24px; font-weight: bold; margin-bottom: 4px;">17</div>
+                    <div style="font-size: 12px; opacity: 0.7;">Reviews</div>
                 </div>
             </div>
 
-            <div style="background: rgba(76,175,80,0.1); border-radius: 12px; padding: 16px; margin-top: 20px;">
-                <h4 style="margin-bottom: 12px;">🔒 Privacy First</h4>
-                <div style="font-size: 13px; line-height: 1.6;">
-                    ✓ No account required<br>
-                    ✓ All data stored locally<br>
-                    ✓ Zero tracking<br>
-                    ✓ Fully anonymous
+            <h3 style="margin: 24px 0 12px;">Badges Earned</h3>
+            <div class="badges-grid">
+                <div class="badge">
+                    <div style="font-size: 32px; margin-bottom: 4px;">🎯</div>
+                    <div style="font-size: 11px; font-weight: 600;">First Report</div>
                 </div>
+                <div class="badge">
+                    <div style="font-size: 32px; margin-bottom: 4px;">🗝️</div>
+                    <div style="font-size: 11px; font-weight: 600;">Code Master</div>
+                </div>
+                <div class="badge">
+                    <div style="font-size: 32px; margin-bottom: 4px;">📍</div>
+                    <div style="font-size: 11px; font-weight: 600;">Explorer</div>
+                </div>
+                <div class="badge locked">
+                    <div style="font-size: 32px; margin-bottom: 4px;">👑</div>
+                    <div style="font-size: 11px; font-weight: 600;">Community Hero</div>
+                </div>
+                <div class="badge locked">
+                    <div style="font-size: 32px; margin-bottom: 4px;">🏆</div>
+                    <div style="font-size: 11px; font-weight: 600;">100 Club</div>
+                </div>
+                <div class="badge locked">
+                    <div style="font-size: 32px; margin-bottom: 4px;">⚡</div>
+                    <div style="font-size: 11px; font-weight: 600;">Speed Scout</div>
+                </div>
+            </div>
+
+            <div class="privacy-box">
+                <h4 style="display: flex; align-items: center; gap: 8px;"><span>🔒</span> Privacy First</h4>
+                <ul style="font-size: 13px; opacity: 0.9;">
+                    <li>✓ No account required</li>
+                    <li>✓ All data stored locally on your device</li>
+                    <li>✓ Zero tracking or analytics</li>
+                    <li>✓ Fully anonymous contributions</li>
+                    <li>✓ Your data never leaves your phone</li>
+                </ul>
             </div>
         </div>
     </div>
 
+    <!-- BATHROOM DETAIL MODAL -->
     <div class="modal" id="detailModal">
         <div class="modal-content" style="width: 90%; max-width: 400px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+            <div class="modal-header">
                 <h2 id="detailName">Bathroom Details</h2>
-                <button onclick="closeDetail()" style="background:none; border:none; font-size: 24px; cursor: pointer;">✕</button>
+                <button class="close-btn" onclick="closeDetail()">✕</button>
             </div>
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
-                <div style="font-size: 40px;">💧</div>
+
+            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
+                <div style="font-size: 48px;">💧</div>
                 <div style="flex: 1;">
-                    <div>⭐⭐⭐⭐⭐ 4.8</div>
-                    <div style="font-size: 14px; color: #007AFF;">0.2 mi away</div>
+                    <div style="margin-bottom: 4px;" id="detailRating">⭐⭐⭐⭐⭐ 4.8</div>
+                    <div style="font-size: 14px; color: #007AFF; font-weight: 500;" id="detailDistance">0.2 mi away</div>
+                    <div style="font-size: 13px; opacity: 0.7; margin-top: 4px;" id="detailType">Cafe</div>
                 </div>
-                <button style="font-size: 28px; background: none; border: none;">⭐</button>
+                <button style="font-size: 32px; background: none; border: none; cursor: pointer;" onclick="toggleFavorite()">
+                    <span id="favoriteIcon">☆</span>
+                </button>
             </div>
-            <div style="display: flex; gap: 12px; margin-bottom: 20px;">
-                <button onclick="openReports()" style="flex: 1; padding: 12px; background: rgba(255,149,0,0.1); border: 1px solid rgba(255,149,0,0.3); border-radius: 12px;">📢 Report</button>
-                <button style="flex: 1; padding: 12px; background: rgba(0,122,255,0.1); border: 1px solid rgba(0,122,255,0.3); border-radius: 12px;">🧭 Directions</button>
+
+            <div style="display: flex; gap: 12px; margin-bottom: 24px;">
+                <button onclick="openReports()" style="flex: 1; padding: 14px; background: linear-gradient(135deg, rgba(255,149,0,0.15), rgba(255,149,0,0.1)); border: 1px solid rgba(255,149,0,0.3); border-radius: 12px; font-weight: 600; cursor: pointer;">
+                    📢 Report Issue
+                </button>
+                <button style="flex: 1; padding: 14px; background: linear-gradient(135deg, rgba(0,122,255,0.15), rgba(0,122,255,0.1)); border: 1px solid rgba(0,122,255,0.3); border-radius: 12px; font-weight: 600; cursor: pointer;">
+                    🧭 Directions
+                </button>
             </div>
-            <h3>Live Reports</h3>
-            <div style="background: rgba(0,0,0,0.05); border-radius: 12px; padding: 16px; margin: 12px 0;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <span style="font-size: 24px;">✨</span>
+
+            <h3 style="margin-bottom: 12px;">Live Community Reports</h3>
+            <div style="background: rgba(0,0,0,0.05); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                    <span style="font-size: 28px;">✨</span>
                     <div style="flex: 1;">
-                        <div style="font-weight: bold;">Clean!</div>
-                        <div style="font-size: 12px;">2 min ago • Verified ✓</div>
+                        <div style="font-weight: 600; margin-bottom: 2px;">Very Clean!</div>
+                        <div style="font-size: 12px; opacity: 0.7;">2 min ago • Verified by community ✓</div>
                     </div>
-                    <button style="background: none; border: none; font-size: 20px;">👍 5</button>
-                    <button style="background: none; border: none; font-size: 20px;">❤️ 3</button>
+                    <button style="background: none; border: none; font-size: 18px; cursor: pointer;">👍 5</button>
+                    <button style="background: none; border: none; font-size: 18px; cursor: pointer;">❤️ 3</button>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 28px;">🚪</span>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; margin-bottom: 2px;">Door code: 1234</div>
+                        <div style="font-size: 12px; opacity: 0.7;">15 min ago • +20 points earned</div>
+                    </div>
+                    <button style="background: none; border: none; font-size: 18px; cursor: pointer;">👍 12</button>
+                    <button style="background: none; border: none; font-size: 18px; cursor: pointer;">❤️ 8</button>
+                </div>
+            </div>
+
+            <h3 style="margin-bottom: 12px;">Details</h3>
+            <div style="background: rgba(0,0,0,0.03); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                <div style="margin-bottom: 10px;">🕐 <strong>Hours:</strong> 6:00 AM - 9:00 PM</div>
+                <div style="margin-bottom: 10px;">🚗 <strong>Parking:</strong> Easy street parking</div>
+                <div style="margin-bottom: 10px;">♿ <strong>Accessible:</strong> Yes, wheelchair accessible</div>
+                <div style="margin-bottom: 10px;">🚼 <strong>Baby Changing:</strong> Available</div>
+                <div>🚻 <strong>Type:</strong> Gender neutral available</div>
+            </div>
+
+            <h3 style="margin-bottom: 12px;">Access</h3>
+            <div style="background: rgba(0,122,255,0.1); border: 1px solid rgba(0,122,255,0.3); border-radius: 12px; padding: 16px;">
+                <div style="margin-bottom: 8px;">🆓 <strong>Free to use</strong></div>
+                <div style="margin-bottom: 8px;">🔑 <strong>Code required:</strong> Ask staff or check reports</div>
+                <div>🛒 <strong>Purchase required:</strong> No</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILTER MODAL -->
+    <div class="modal" id="filterModal">
+        <div class="modal-content" style="width: 90%; max-width: 400px;">
+            <div class="modal-header">
+                <h2>Filters</h2>
+                <button class="close-btn" onclick="closeFilters()">✕</button>
+            </div>
+
+            <div class="filter-section">
+                <h3>Accessibility</h3>
+                <div class="filter-toggle" onclick="toggleFilter('wheelchair')">
+                    <span>♿ Wheelchair Accessible</span>
+                    <div class="toggle-switch" id="filter-wheelchair"></div>
+                </div>
+                <div class="filter-toggle" onclick="toggleFilter('babyChanging')">
+                    <span>🚼 Baby Changing Station</span>
+                    <div class="toggle-switch" id="filter-babyChanging"></div>
+                </div>
+                <div class="filter-toggle" onclick="toggleFilter('genderNeutral')">
+                    <span>🚻 Gender Neutral</span>
+                    <div class="toggle-switch" id="filter-genderNeutral"></div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <h3>Minimum Rating</h3>
+                <div class="rating-selector">
+                    <div class="rating-btn" onclick="setRating(0)">Any</div>
+                    <div class="rating-btn" onclick="setRating(3)">⭐ 3+</div>
+                    <div class="rating-btn selected" onclick="setRating(4)">⭐ 4+</div>
+                    <div class="rating-btn" onclick="setRating(4.5)">⭐ 4.5+</div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <h3>Distance: <span id="distanceValue">2.0</span> miles</h3>
+                <input type="range" class="distance-slider" min="0.5" max="10" step="0.5" value="2"
+                       oninput="updateDistance(this.value)">
+            </div>
+
+            <div class="filter-section">
+                <h3>Other Filters</h3>
+                <div class="filter-toggle" onclick="toggleFilter('favorites')">
+                    <span>⭐ Favorites Only</span>
+                    <div class="toggle-switch" id="filter-favorites"></div>
+                </div>
+                <div class="filter-toggle" onclick="toggleFilter('freeAccess')">
+                    <span>🆓 Free Access Only</span>
+                    <div class="toggle-switch" id="filter-freeAccess"></div>
+                </div>
+                <div class="filter-toggle" onclick="toggleFilter('openNow')">
+                    <span>🕐 Open Now</span>
+                    <div class="toggle-switch" id="filter-openNow"></div>
+                </div>
+            </div>
+
+            <button class="submit-btn" onclick="applyFilters()">Apply Filters</button>
+        </div>
+    </div>
+
+    <!-- REPORT MODAL -->
+    <div class="modal" id="reportModal">
+        <div class="modal-content" style="width: 90%; max-width: 400px;">
+            <div class="modal-header">
+                <h2>Quick Report</h2>
+                <button class="close-btn" onclick="closeReports()">✕</button>
+            </div>
+            <p style="margin-bottom: 20px; opacity: 0.8;">Help the community - what's the status of this bathroom?</p>
+            <div class="report-grid">
+                <div class="report-btn" onclick="submitReport('clean')">
+                    <div style="font-size: 48px; margin-bottom: 8px;">✨</div>
+                    <div style="font-weight: 600;">Clean</div>
+                    <div style="font-size: 11px; opacity: 0.7; margin-top: 4px;">+10 points</div>
+                </div>
+                <div class="report-btn" onclick="submitReport('dirty')">
+                    <div style="font-size: 48px; margin-bottom: 8px;">⚠️</div>
+                    <div style="font-weight: 600;">Dirty</div>
+                    <div style="font-size: 11px; opacity: 0.7; margin-top: 4px;">+10 points</div>
+                </div>
+                <div class="report-btn" onclick="submitReport('broken')">
+                    <div style="font-size: 48px; margin-bottom: 8px;">🚫</div>
+                    <div style="font-weight: 600;">Out of Order</div>
+                    <div style="font-size: 11px; opacity: 0.7; margin-top: 4px;">+15 points</div>
+                </div>
+                <div class="report-btn" onclick="submitReport('no-paper')">
+                    <div style="font-size: 48px; margin-bottom: 8px;">🧻</div>
+                    <div style="font-weight: 600;">No Paper</div>
+                    <div style="font-size: 11px; opacity: 0.7; margin-top: 4px;">+10 points</div>
+                </div>
+                <div class="report-btn" onclick="submitReport('door-code')">
+                    <div style="font-size: 48px; margin-bottom: 8px;">🔑</div>
+                    <div style="font-weight: 600;">Add Door Code</div>
+                    <div style="font-size: 11px; opacity: 0.7; margin-top: 4px;">+20 points</div>
+                </div>
+                <div class="report-btn" onclick="submitReport('photo')">
+                    <div style="font-size: 48px; margin-bottom: 8px;">📸</div>
+                    <div style="font-weight: 600;">Add Photo</div>
+                    <div style="font-size: 11px; opacity: 0.7; margin-top: 4px;">+8 points</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal" id="reportModal">
+    <!-- ADD BATHROOM MODAL -->
+    <div class="modal" id="addBathroomModal">
         <div class="modal-content" style="width: 90%; max-width: 400px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-                <h2>Quick Report</h2>
-                <button onclick="closeReports()" style="background:none; border:none; font-size: 24px; cursor: pointer;">✕</button>
+            <div class="modal-header">
+                <h2>Add New Bathroom</h2>
+                <button class="close-btn" onclick="closeAddBathroom()">✕</button>
             </div>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
-                <div onclick="submitReport('clean')" style="background: rgba(255,255,255,0.5); border-radius: 16px; padding: 24px; text-align: center; cursor: pointer;">
-                    <div style="font-size: 40px; margin-bottom: 8px;">✨</div>
-                    <div style="font-weight: bold;">Clean</div>
+            <form onsubmit="submitNewBathroom(event)">
+                <div class="form-group">
+                    <label>Business Name *</label>
+                    <input type="text" placeholder="e.g., Starbucks" required>
                 </div>
-                <div onclick="submitReport('dirty')" style="background: rgba(255,255,255,0.5); border-radius: 16px; padding: 24px; text-align: center; cursor: pointer;">
-                    <div style="font-size: 40px; margin-bottom: 8px;">⚠️</div>
-                    <div style="font-weight: bold;">Dirty</div>
+                <div class="form-group">
+                    <label>Type *</label>
+                    <input type="text" placeholder="e.g., Cafe, Restaurant, Park" required>
                 </div>
-                <div onclick="submitReport('broken')" style="background: rgba(255,255,255,0.5); border-radius: 16px; padding: 24px; text-align: center; cursor: pointer;">
-                    <div style="font-size: 40px; margin-bottom: 8px;">🚫</div>
-                    <div style="font-weight: bold;">Out of Order</div>
+                <div class="form-group">
+                    <label>📍 Location</label>
+                    <input type="text" placeholder="Using current location..." disabled value="Current Location">
                 </div>
-                <div onclick="submitReport('no-paper')" style="background: rgba(255,255,255,0.5); border-radius: 16px; padding: 24px; text-align: center; cursor: pointer;">
-                    <div style="font-size: 40px; margin-bottom: 8px;">🧻</div>
-                    <div style="font-weight: bold;">No Paper</div>
+                <div class="form-group">
+                    <label>Rating (optional)</label>
+                    <div class="rating-selector">
+                        <div class="rating-btn" onclick="selectNewRating(1); event.preventDefault()">⭐ 1</div>
+                        <div class="rating-btn" onclick="selectNewRating(2); event.preventDefault()">⭐ 2</div>
+                        <div class="rating-btn" onclick="selectNewRating(3); event.preventDefault()">⭐ 3</div>
+                        <div class="rating-btn" onclick="selectNewRating(4); event.preventDefault()">⭐ 4</div>
+                        <div class="rating-btn" onclick="selectNewRating(5); event.preventDefault()">⭐ 5</div>
+                    </div>
                 </div>
-            </div>
+                <div class="form-group">
+                    <label>Additional Notes (optional)</label>
+                    <textarea rows="3" placeholder="Access code, hours, accessibility features..."></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Add Bathroom (+15 points)</button>
+            </form>
         </div>
     </div>
 
     <script>
+        // Data
         const bathrooms = [
-            { id: 1, name: "Starbucks Coffee", type: "Cafe", distance: "0.2 mi", rating: 4.8, favorite: true, liveReports: 1 },
-            { id: 2, name: "Central Park", type: "Public Park", distance: "0.4 mi", rating: 3.5, favorite: false, liveReports: 1 },
-            { id: 3, name: "McDonald's", type: "Fast Food", distance: "0.5 mi", rating: 4.2, favorite: false, liveReports: 0 },
-            { id: 4, name: "City Library", type: "Library", distance: "0.7 mi", rating: 4.6, favorite: false, liveReports: 0 }
+            { id: 1, name: "Starbucks Coffee", type: "Cafe", distance: "0.2 mi", rating: 4.8, favorite: true, liveReports: 2, lat: 45, lng: 30 },
+            { id: 2, name: "Central Park", type: "Public Park", distance: "0.4 mi", rating: 3.5, favorite: false, liveReports: 0, lat: 30, lng: 50 },
+            { id: 3, name: "McDonald's", type: "Fast Food", distance: "0.5 mi", rating: 4.2, favorite: false, liveReports: 0, lat: 60, lng: 40 },
+            { id: 4, name: "City Library", type: "Library", distance: "0.7 mi", rating: 4.6, favorite: false, liveReports: 0, lat: 70, lng: 70 },
+            { id: 5, name: "Target", type: "Retail", distance: "0.9 mi", rating: 4.3, favorite: false, liveReports: 1, lat: 40, lng: 20 }
         ];
 
         let isDarkMode = false;
         let emergencyMode = false;
+        let isMapView = false;
+        let filters = {};
+        let currentBathroom = null;
 
+        // Initialize
+        function init() {
+            renderBathrooms();
+            renderMapMarkers();
+        }
+
+        // Render bathrooms list
         function renderBathrooms() {
-            const content = document.getElementById('content');
-            content.innerHTML = '';
+            const listView = document.getElementById('listView');
+            listView.innerHTML = '';
             bathrooms.forEach(b => {
                 const card = document.createElement('div');
                 card.className = 'bathroom-card';
                 card.onclick = () => openDetail(b);
                 const stars = '⭐'.repeat(Math.floor(b.rating));
-                const fav = b.favorite ? '<span style="position: absolute; top: -4px; right: -4px;">⭐</span>' : '';
-                const report = b.liveReports > 0 ? `<div class="live-report">🔴 ${b.liveReports} live report • ✨ Clean</div>` : '';
+                const fav = b.favorite ? '<span style="position: absolute; top: -4px; right: -4px; font-size: 16px;">⭐</span>' : '';
+                const report = b.liveReports > 0 ? `<div class="live-report">🔴 ${b.liveReports} live report${b.liveReports > 1 ? 's' : ''} • ✨ Clean, 🔑 Code shared</div>` : '';
                 card.innerHTML = `
                     <div style="display: flex; align-items: center; margin-bottom: 14px;">
                         <div class="card-icon">💧${fav}</div>
                         <div style="flex: 1; margin-left: 14px;">
-                            <div style="font-size: 18px; font-weight: 600;">${b.name}</div>
-                            <div style="font-size: 14px; color: #666;">${b.type}</div>
-                            <div style="font-size: 12px;">${stars} ${b.rating}</div>
+                            <div style="font-size: 18px; font-weight: 600; margin-bottom: 4px;">${b.name}</div>
+                            <div style="font-size: 14px; opacity: 0.7; margin-bottom: 4px;">${b.type}</div>
+                            <div style="font-size: 13px;">${stars} ${b.rating}</div>
                         </div>
-                        <div style="font-size: 16px; font-weight: bold; color: #007AFF;">${b.distance}</div>
+                        <div style="font-size: 18px; font-weight: bold; color: #007AFF;">${b.distance}</div>
                     </div>
                     ${report}
                     <div style="height: 1px; background: rgba(0,0,0,0.1); margin: 12px 0;"></div>
-                    <div style="font-size: 13px; color: #666;">🕐 6 AM - 9 PM  •  🚗 Easy  •  ♿ Accessible</div>
+                    <div style="font-size: 13px; opacity: 0.7;">🕐 6 AM - 9 PM  •  🚗 Easy  •  ♿ Accessible</div>
                 `;
-                content.appendChild(card);
+                listView.appendChild(card);
             });
         }
 
+        // Render map markers
+        function renderMapMarkers() {
+            const mapView = document.getElementById('mapView');
+            // Remove old markers (keep SVG and user location)
+            const oldMarkers = mapView.querySelectorAll('.map-marker');
+            oldMarkers.forEach(m => m.remove());
+
+            bathrooms.forEach(b => {
+                const marker = document.createElement('div');
+                marker.className = 'map-marker';
+                if (b.favorite) marker.classList.add('favorite');
+                if (b.liveReports > 0) marker.classList.add('active-report');
+                marker.style.left = b.lng + '%';
+                marker.style.top = b.lat + '%';
+                marker.innerHTML = '💧';
+                marker.onclick = () => openDetail(b);
+                marker.title = b.name;
+                mapView.appendChild(marker);
+            });
+        }
+
+        // Dark mode
         function toggleDarkMode() {
             isDarkMode = !isDarkMode;
             document.body.classList.toggle('dark-mode');
             document.getElementById('darkModeIcon').textContent = isDarkMode ? '🌙' : '☀️';
         }
 
+        // Emergency mode
         function toggleEmergency() {
             emergencyMode = !emergencyMode;
             document.getElementById('emergencyBtn').classList.toggle('active');
             document.getElementById('emergencyBanner').classList.toggle('active');
         }
 
+        // View toggle
         function toggleView() {
+            isMapView = !isMapView;
+            const listView = document.getElementById('listView');
+            const mapView = document.getElementById('mapView');
             const icon = document.getElementById('viewIcon');
-            icon.textContent = icon.textContent === '📋' ? '🗺️' : '📋';
+
+            if (isMapView) {
+                listView.classList.add('hidden');
+                mapView.classList.add('active');
+                icon.textContent = '📋';
+            } else {
+                listView.classList.remove('hidden');
+                mapView.classList.remove('active');
+                icon.textContent = '🗺️';
+            }
         }
 
-        function refresh() { renderBathrooms(); }
-        function openProfile() { document.getElementById('profileModal').classList.add('active'); }
-        function closeProfile() { document.getElementById('profileModal').classList.remove('active'); }
-        function openFilters() { alert('Filters: ♿ Wheelchair, 🚼 Baby Changing, ⭐ Ratings, etc.'); }
-        function openDetail(b) {
-            document.getElementById('detailName').textContent = b.name;
+        // Refresh
+        function refresh() {
+            renderBathrooms();
+            renderMapMarkers();
+        }
+
+        // Profile
+        function openProfile() {
+            document.getElementById('profileModal').classList.add('active');
+        }
+        function closeProfile() {
+            document.getElementById('profileModal').classList.remove('active');
+        }
+
+        // Filters
+        function openFilters() {
+            document.getElementById('filterModal').classList.add('active');
+        }
+        function closeFilters() {
+            document.getElementById('filterModal').classList.remove('active');
+        }
+        function toggleFilter(filterId) {
+            const toggle = document.getElementById('filter-' + filterId);
+            toggle.classList.toggle('on');
+            filters[filterId] = toggle.classList.contains('on');
+        }
+        function setRating(rating) {
+            document.querySelectorAll('.rating-selector .rating-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+            filters.minRating = rating;
+        }
+        function updateDistance(value) {
+            document.getElementById('distanceValue').textContent = value;
+            filters.maxDistance = value;
+        }
+        function applyFilters() {
+            // In real app, this would filter the bathrooms
+            closeFilters();
+            alert('Filters applied! 🎯\n\nShowing bathrooms that match your preferences.');
+        }
+
+        // Bathroom details
+        function openDetail(bathroom) {
+            currentBathroom = bathroom;
+            document.getElementById('detailName').textContent = bathroom.name;
+            document.getElementById('detailRating').textContent = '⭐'.repeat(Math.floor(bathroom.rating)) + ' ' + bathroom.rating;
+            document.getElementById('detailDistance').textContent = bathroom.distance + ' away';
+            document.getElementById('detailType').textContent = bathroom.type;
+            document.getElementById('favoriteIcon').textContent = bathroom.favorite ? '⭐' : '☆';
             document.getElementById('detailModal').classList.add('active');
         }
-        function closeDetail() { document.getElementById('detailModal').classList.remove('active'); }
-        function openReports() { document.getElementById('reportModal').classList.add('active'); }
-        function closeReports() { document.getElementById('reportModal').classList.remove('active'); }
+        function closeDetail() {
+            document.getElementById('detailModal').classList.remove('active');
+        }
+        function toggleFavorite() {
+            if (currentBathroom) {
+                currentBathroom.favorite = !currentBathroom.favorite;
+                document.getElementById('favoriteIcon').textContent = currentBathroom.favorite ? '⭐' : '☆';
+                renderBathrooms();
+                renderMapMarkers();
+            }
+        }
+
+        // Reports
+        function openReports() {
+            document.getElementById('reportModal').classList.add('active');
+        }
+        function closeReports() {
+            document.getElementById('reportModal').classList.remove('active');
+        }
         function submitReport(type) {
-            alert(`Report submitted: ${type}\n\n+10 points earned! 🎉`);
+            const points = type === 'door-code' ? 20 : type === 'broken' ? 15 : type === 'photo' ? 8 : 10;
+            alert(`✅ Report submitted: ${type}\n\n+${points} points earned! 🎉\n\nThank you for helping the community!`);
+
+            // Update points
+            const currentPoints = parseInt(document.getElementById('userPoints').textContent);
+            document.getElementById('userPoints').textContent = currentPoints + points;
+
             closeReports();
             closeDetail();
         }
 
-        renderBathrooms();
+        // Add bathroom
+        function openAddBathroom() {
+            document.getElementById('addBathroomModal').classList.add('active');
+        }
+        function closeAddBathroom() {
+            document.getElementById('addBathroomModal').classList.remove('active');
+        }
+        function selectNewRating(rating) {
+            // Visual feedback only
+            console.log('Selected rating:', rating);
+        }
+        function submitNewBathroom(e) {
+            e.preventDefault();
+            alert('🎉 New bathroom added!\n\n+15 points earned!\n\nThank you for contributing to the community!');
+
+            // Update points
+            const currentPoints = parseInt(document.getElementById('userPoints').textContent);
+            document.getElementById('userPoints').textContent = currentPoints + 15;
+
+            closeAddBathroom();
+        }
+
+        // Initialize app
+        init();
     </script>
 </body>
 </html>
