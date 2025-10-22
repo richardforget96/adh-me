@@ -108,11 +108,48 @@
             50% { opacity: 0.7; }
         }
 
+        /* ACTIVE FILTERS BAR */
+        .active-filters-bar {
+            padding: 12px 20px;
+            background: rgba(0,122,255,0.1);
+            border-bottom: 1px solid rgba(0,122,255,0.2);
+            display: none;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .active-filters-bar.visible {
+            display: flex;
+        }
+
+        .filter-chip {
+            background: rgba(0,122,255,0.2);
+            border: 1px solid rgba(0,122,255,0.4);
+            border-radius: 16px;
+            padding: 4px 12px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-chip-close {
+            cursor: pointer;
+            font-weight: bold;
+        }
+
         .content {
             flex: 1;
             padding: 20px;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            opacity: 0.6;
         }
 
         /* MAP VIEW */
@@ -633,6 +670,9 @@
             <span style="margin-left: auto; font-size: 13px; opacity: 0.8;">Showing closest bathrooms</span>
         </div>
 
+        <!-- ACTIVE FILTERS BAR -->
+        <div class="active-filters-bar" id="activeFiltersBar"></div>
+
         <!-- CONTENT AREA -->
         <div class="content" id="content">
             <!-- LIST VIEW -->
@@ -663,8 +703,8 @@
     </div>
 
     <!-- PROFILE MODAL -->
-    <div class="modal" id="profileModal">
-        <div class="modal-content" style="width: 90%; max-width: 400px;">
+    <div class="modal" id="profileModal" onclick="closeModalOnBackdrop(event, 'profileModal')">
+        <div class="modal-content" style="width: 90%; max-width: 400px;" onclick="event.stopPropagation()">
             <div class="modal-header">
                 <h2>Your Profile</h2>
                 <button class="close-btn" onclick="closeProfile()">✕</button>
@@ -674,9 +714,9 @@
                 <div style="font-size: 60px; margin-bottom: 12px;">🚽</div>
                 <h3 style="font-size: 24px; margin-bottom: 8px;">Bathroom Scout</h3>
                 <p style="font-size: 16px; opacity: 0.8; margin-bottom: 4px;">Level 2</p>
-                <p style="font-size: 14px; font-weight: 600; color: #007AFF;">250 / 500 points</p>
+                <p style="font-size: 14px; font-weight: 600; color: #007AFF;"><span id="profilePoints">250</span> / 500 points</p>
                 <div class="progress-bar">
-                    <div class="progress-fill" style="width: 50%;"></div>
+                    <div class="progress-fill" id="progressFill" style="width: 50%;"></div>
                 </div>
                 <div style="display: flex; gap: 24px; justify-content: center; margin-top: 20px;">
                     <div>
@@ -684,7 +724,7 @@
                         <small style="opacity: 0.7;">Trust Score</small>
                     </div>
                     <div>
-                        <div style="font-size: 28px; font-weight: bold; color: #2196F3;">42</div>
+                        <div style="font-size: 28px; font-weight: bold; color: #2196F3;" id="profileReports">42</div>
                         <small style="opacity: 0.7;">Reports</small>
                     </div>
                     <div>
@@ -698,7 +738,7 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div style="font-size: 36px; margin-bottom: 8px;">🆕</div>
-                    <div style="font-size: 24px; font-weight: bold; margin-bottom: 4px;">5</div>
+                    <div style="font-size: 24px; font-weight: bold; margin-bottom: 4px;" id="bathroomsAdded">5</div>
                     <div style="font-size: 12px; opacity: 0.7;">Bathrooms Added</div>
                 </div>
                 <div class="stat-card">
@@ -760,8 +800,8 @@
     </div>
 
     <!-- BATHROOM DETAIL MODAL -->
-    <div class="modal" id="detailModal">
-        <div class="modal-content" style="width: 90%; max-width: 400px;">
+    <div class="modal" id="detailModal" onclick="closeModalOnBackdrop(event, 'detailModal')">
+        <div class="modal-content" style="width: 90%; max-width: 400px;" onclick="event.stopPropagation()">
             <div class="modal-header">
                 <h2 id="detailName">Bathroom Details</h2>
                 <button class="close-btn" onclick="closeDetail()">✕</button>
@@ -811,7 +851,7 @@
             </div>
 
             <h3 style="margin-bottom: 12px;">Details</h3>
-            <div style="background: rgba(0,0,0,0.03); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+            <div style="background: rgba(0,0,0,0.03); border-radius: 12px; padding: 16px; margin-bottom: 20px;" id="detailDetails">
                 <div style="margin-bottom: 10px;">🕐 <strong>Hours:</strong> 6:00 AM - 9:00 PM</div>
                 <div style="margin-bottom: 10px;">🚗 <strong>Parking:</strong> Easy street parking</div>
                 <div style="margin-bottom: 10px;">♿ <strong>Accessible:</strong> Yes, wheelchair accessible</div>
@@ -829,8 +869,8 @@
     </div>
 
     <!-- FILTER MODAL -->
-    <div class="modal" id="filterModal">
-        <div class="modal-content" style="width: 90%; max-width: 400px;">
+    <div class="modal" id="filterModal" onclick="closeModalOnBackdrop(event, 'filterModal')">
+        <div class="modal-content" style="width: 90%; max-width: 400px;" onclick="event.stopPropagation()">
             <div class="modal-header">
                 <h2>Filters</h2>
                 <button class="close-btn" onclick="closeFilters()">✕</button>
@@ -855,10 +895,10 @@
             <div class="filter-section">
                 <h3>Minimum Rating</h3>
                 <div class="rating-selector">
-                    <div class="rating-btn" onclick="setRating(0)">Any</div>
-                    <div class="rating-btn" onclick="setRating(3)">⭐ 3+</div>
-                    <div class="rating-btn selected" onclick="setRating(4)">⭐ 4+</div>
-                    <div class="rating-btn" onclick="setRating(4.5)">⭐ 4.5+</div>
+                    <div class="rating-btn" id="rating-0" onclick="setRating(0)">Any</div>
+                    <div class="rating-btn" id="rating-3" onclick="setRating(3)">⭐ 3+</div>
+                    <div class="rating-btn" id="rating-4" onclick="setRating(4)">⭐ 4+</div>
+                    <div class="rating-btn" id="rating-4.5" onclick="setRating(4.5)">⭐ 4.5+</div>
                 </div>
             </div>
 
@@ -885,12 +925,13 @@
             </div>
 
             <button class="submit-btn" onclick="applyFilters()">Apply Filters</button>
+            <button class="submit-btn" onclick="clearFilters()" style="background: rgba(0,0,0,0.1); color: inherit; margin-top: 12px;">Clear All Filters</button>
         </div>
     </div>
 
     <!-- REPORT MODAL -->
-    <div class="modal" id="reportModal">
-        <div class="modal-content" style="width: 90%; max-width: 400px;">
+    <div class="modal" id="reportModal" onclick="closeModalOnBackdrop(event, 'reportModal')">
+        <div class="modal-content" style="width: 90%; max-width: 400px;" onclick="event.stopPropagation()">
             <div class="modal-header">
                 <h2>Quick Report</h2>
                 <button class="close-btn" onclick="closeReports()">✕</button>
@@ -917,7 +958,7 @@
                     <div style="font-weight: 600;">No Paper</div>
                     <div style="font-size: 11px; opacity: 0.7; margin-top: 4px;">+10 points</div>
                 </div>
-                <div class="report-btn" onclick="submitReport('door-code')">
+                <div class="report-btn" onclick="submitReportDoorCode()">
                     <div style="font-size: 48px; margin-bottom: 8px;">🔑</div>
                     <div style="font-weight: 600;">Add Door Code</div>
                     <div style="font-size: 11px; opacity: 0.7; margin-top: 4px;">+20 points</div>
@@ -932,8 +973,8 @@
     </div>
 
     <!-- ADD BATHROOM MODAL -->
-    <div class="modal" id="addBathroomModal">
-        <div class="modal-content" style="width: 90%; max-width: 400px;">
+    <div class="modal" id="addBathroomModal" onclick="closeModalOnBackdrop(event, 'addBathroomModal')">
+        <div class="modal-content" style="width: 90%; max-width: 400px;" onclick="event.stopPropagation()">
             <div class="modal-header">
                 <h2>Add New Bathroom</h2>
                 <button class="close-btn" onclick="closeAddBathroom()">✕</button>
@@ -941,11 +982,11 @@
             <form onsubmit="submitNewBathroom(event)">
                 <div class="form-group">
                     <label>Business Name *</label>
-                    <input type="text" placeholder="e.g., Starbucks" required>
+                    <input type="text" id="newBathroomName" placeholder="e.g., Starbucks" required>
                 </div>
                 <div class="form-group">
                     <label>Type *</label>
-                    <input type="text" placeholder="e.g., Cafe, Restaurant, Park" required>
+                    <input type="text" id="newBathroomType" placeholder="e.g., Cafe, Restaurant, Park" required>
                 </div>
                 <div class="form-group">
                     <label>📍 Location</label>
@@ -963,7 +1004,7 @@
                 </div>
                 <div class="form-group">
                     <label>Additional Notes (optional)</label>
-                    <textarea rows="3" placeholder="Access code, hours, accessibility features..."></textarea>
+                    <textarea rows="3" id="newBathroomNotes" placeholder="Access code, hours, accessibility features..."></textarea>
                 </div>
                 <button type="submit" class="submit-btn">Add Bathroom (+15 points)</button>
             </form>
@@ -971,38 +1012,113 @@
     </div>
 
     <script>
-        // Data
-        const bathrooms = [
-            { id: 1, name: "Starbucks Coffee", type: "Cafe", distance: "0.2 mi", rating: 4.8, favorite: true, liveReports: 2, lat: 45, lng: 30 },
-            { id: 2, name: "Central Park", type: "Public Park", distance: "0.4 mi", rating: 3.5, favorite: false, liveReports: 0, lat: 30, lng: 50 },
-            { id: 3, name: "McDonald's", type: "Fast Food", distance: "0.5 mi", rating: 4.2, favorite: false, liveReports: 0, lat: 60, lng: 40 },
-            { id: 4, name: "City Library", type: "Library", distance: "0.7 mi", rating: 4.6, favorite: false, liveReports: 0, lat: 70, lng: 70 },
-            { id: 5, name: "Target", type: "Retail", distance: "0.9 mi", rating: 4.3, favorite: false, liveReports: 1, lat: 40, lng: 20 }
+        // Data - More realistic bathroom locations
+        let bathrooms = [
+            { id: 1, name: "Starbucks Coffee", type: "Cafe", distanceVal: 0.2, rating: 4.8, favorite: true, liveReports: 2, lat: 45, lng: 30, wheelchair: true, babyChanging: true, genderNeutral: true, freeAccess: false },
+            { id: 2, name: "Central Park Restroom", type: "Public Park", distanceVal: 0.4, rating: 3.5, favorite: false, liveReports: 0, lat: 30, lng: 50, wheelchair: true, babyChanging: false, genderNeutral: false, freeAccess: true },
+            { id: 3, name: "McDonald's", type: "Fast Food", distanceVal: 0.5, rating: 4.2, favorite: false, liveReports: 0, lat: 60, lng: 40, wheelchair: true, babyChanging: true, genderNeutral: false, freeAccess: false },
+            { id: 4, name: "City Library", type: "Library", distanceVal: 0.7, rating: 4.6, favorite: false, liveReports: 0, lat: 70, lng: 70, wheelchair: true, babyChanging: true, genderNeutral: true, freeAccess: true },
+            { id: 5, name: "Target", type: "Retail", distanceVal: 0.9, rating: 4.3, favorite: false, liveReports: 1, lat: 40, lng: 20, wheelchair: true, babyChanging: true, genderNeutral: false, freeAccess: true },
+            { id: 6, name: "Whole Foods", type: "Grocery", distanceVal: 1.1, rating: 4.7, favorite: true, liveReports: 0, lat: 25, lng: 65, wheelchair: true, babyChanging: true, genderNeutral: true, freeAccess: true },
+            { id: 7, name: "Panera Bread", type: "Cafe", distanceVal: 1.3, rating: 4.4, favorite: false, liveReports: 0, lat: 55, lng: 25, wheelchair: true, babyChanging: false, genderNeutral: false, freeAccess: false },
+            { id: 8, name: "Union Station", type: "Transit", distanceVal: 1.5, rating: 3.8, favorite: false, liveReports: 2, lat: 35, lng: 75, wheelchair: true, babyChanging: true, genderNeutral: true, freeAccess: true },
+            { id: 9, name: "Barnes & Noble", type: "Bookstore", distanceVal: 1.7, rating: 4.5, favorite: false, liveReports: 0, lat: 65, lng: 55, wheelchair: true, babyChanging: true, genderNeutral: false, freeAccess: true },
+            { id: 10, name: "Shopping Mall Food Court", type: "Mall", distanceVal: 1.9, rating: 4.0, favorite: false, liveReports: 1, lat: 50, lng: 35, wheelchair: true, babyChanging: true, genderNeutral: false, freeAccess: true },
+            { id: 11, name: "Chipotle", type: "Fast Food", distanceVal: 2.1, rating: 4.1, favorite: false, liveReports: 0, lat: 20, lng: 45, wheelchair: false, babyChanging: false, genderNeutral: false, freeAccess: false },
+            { id: 12, name: "Community Center", type: "Public", distanceVal: 2.3, rating: 4.4, favorite: false, liveReports: 0, lat: 75, lng: 60, wheelchair: true, babyChanging: true, genderNeutral: true, freeAccess: true },
         ];
 
         let isDarkMode = false;
         let emergencyMode = false;
         let isMapView = false;
-        let filters = {};
         let currentBathroom = null;
+        let userStats = {
+            points: 250,
+            reports: 42,
+            bathroomsAdded: 5
+        };
+
+        // Filter state
+        let activeFilters = {
+            wheelchair: false,
+            babyChanging: false,
+            genderNeutral: false,
+            minRating: 0,
+            maxDistance: 2.0,
+            favorites: false,
+            freeAccess: false,
+            openNow: false
+        };
 
         // Initialize
         function init() {
+            updateBathroomDistances();
             renderBathrooms();
             renderMapMarkers();
+            updateFilterUI();
+        }
+
+        // Update distances based on filter distance
+        function updateBathroomDistances() {
+            bathrooms.forEach(b => {
+                b.distance = b.distanceVal.toFixed(1) + ' mi';
+            });
+        }
+
+        // Get filtered bathrooms
+        function getFilteredBathrooms() {
+            let filtered = [...bathrooms];
+
+            // Apply filters
+            if (activeFilters.wheelchair) {
+                filtered = filtered.filter(b => b.wheelchair);
+            }
+            if (activeFilters.babyChanging) {
+                filtered = filtered.filter(b => b.babyChanging);
+            }
+            if (activeFilters.genderNeutral) {
+                filtered = filtered.filter(b => b.genderNeutral);
+            }
+            if (activeFilters.minRating > 0) {
+                filtered = filtered.filter(b => b.rating >= activeFilters.minRating);
+            }
+            if (activeFilters.maxDistance > 0) {
+                filtered = filtered.filter(b => b.distanceVal <= activeFilters.maxDistance);
+            }
+            if (activeFilters.favorites) {
+                filtered = filtered.filter(b => b.favorite);
+            }
+            if (activeFilters.freeAccess) {
+                filtered = filtered.filter(b => b.freeAccess);
+            }
+
+            // Sort by distance if emergency mode
+            if (emergencyMode) {
+                filtered.sort((a, b) => a.distanceVal - b.distanceVal);
+            }
+
+            return filtered;
         }
 
         // Render bathrooms list
         function renderBathrooms() {
             const listView = document.getElementById('listView');
+            const filtered = getFilteredBathrooms();
+
             listView.innerHTML = '';
-            bathrooms.forEach(b => {
+
+            if (filtered.length === 0) {
+                listView.innerHTML = '<div class="no-results"><div style="font-size: 48px; margin-bottom: 16px;">🔍</div><div style="font-size: 18px; font-weight: 600;">No bathrooms found</div><div style="margin-top: 8px; font-size: 14px;">Try adjusting your filters</div></div>';
+                return;
+            }
+
+            filtered.forEach(b => {
                 const card = document.createElement('div');
                 card.className = 'bathroom-card';
                 card.onclick = () => openDetail(b);
                 const stars = '⭐'.repeat(Math.floor(b.rating));
                 const fav = b.favorite ? '<span style="position: absolute; top: -4px; right: -4px; font-size: 16px;">⭐</span>' : '';
-                const report = b.liveReports > 0 ? `<div class="live-report">🔴 ${b.liveReports} live report${b.liveReports > 1 ? 's' : ''} • ✨ Clean, 🔑 Code shared</div>` : '';
+                const report = b.liveReports > 0 ? `<div class="live-report">🔴 ${b.liveReports} live report${b.liveReports > 1 ? 's' : ''} • ✨ Clean${b.liveReports > 1 ? ', 🔑 Code shared' : ''}</div>` : '';
                 card.innerHTML = `
                     <div style="display: flex; align-items: center; margin-bottom: 14px;">
                         <div class="card-icon">💧${fav}</div>
@@ -1015,20 +1131,24 @@
                     </div>
                     ${report}
                     <div style="height: 1px; background: rgba(0,0,0,0.1); margin: 12px 0;"></div>
-                    <div style="font-size: 13px; opacity: 0.7;">🕐 6 AM - 9 PM  •  🚗 Easy  •  ♿ Accessible</div>
+                    <div style="font-size: 13px; opacity: 0.7;">🕐 6 AM - 9 PM  •  🚗 ${b.distanceVal < 0.5 ? 'Easy' : 'Street'}  •  ${b.wheelchair ? '♿ Accessible' : '⚠️ No wheelchair access'}</div>
                 `;
                 listView.appendChild(card);
             });
+
+            updateActiveFiltersBar();
         }
 
         // Render map markers
         function renderMapMarkers() {
             const mapView = document.getElementById('mapView');
+            const filtered = getFilteredBathrooms();
+
             // Remove old markers (keep SVG and user location)
             const oldMarkers = mapView.querySelectorAll('.map-marker');
             oldMarkers.forEach(m => m.remove());
 
-            bathrooms.forEach(b => {
+            filtered.forEach(b => {
                 const marker = document.createElement('div');
                 marker.className = 'map-marker';
                 if (b.favorite) marker.classList.add('favorite');
@@ -1040,6 +1160,53 @@
                 marker.title = b.name;
                 mapView.appendChild(marker);
             });
+        }
+
+        // Update active filters bar
+        function updateActiveFiltersBar() {
+            const bar = document.getElementById('activeFiltersBar');
+            const hasActiveFilters = Object.values(activeFilters).some((v, i) => {
+                if (i === 3) return v > 0; // minRating
+                if (i === 4) return v < 2.0; // maxDistance
+                return v === true;
+            });
+
+            if (!hasActiveFilters) {
+                bar.classList.remove('visible');
+                return;
+            }
+
+            bar.classList.add('visible');
+            bar.innerHTML = '<span style="font-weight: 600; font-size: 12px;">Active Filters:</span>';
+
+            if (activeFilters.wheelchair) addFilterChip(bar, '♿ Wheelchair', 'wheelchair');
+            if (activeFilters.babyChanging) addFilterChip(bar, '🚼 Baby Changing', 'babyChanging');
+            if (activeFilters.genderNeutral) addFilterChip(bar, '🚻 Gender Neutral', 'genderNeutral');
+            if (activeFilters.minRating > 0) addFilterChip(bar, `⭐ ${activeFilters.minRating}+`, 'rating');
+            if (activeFilters.maxDistance < 2.0) addFilterChip(bar, `📍 ${activeFilters.maxDistance} mi`, 'distance');
+            if (activeFilters.favorites) addFilterChip(bar, '⭐ Favorites', 'favorites');
+            if (activeFilters.freeAccess) addFilterChip(bar, '🆓 Free', 'freeAccess');
+        }
+
+        function addFilterChip(container, text, id) {
+            const chip = document.createElement('div');
+            chip.className = 'filter-chip';
+            chip.innerHTML = `${text} <span class="filter-chip-close" onclick="removeFilter('${id}')">✕</span>`;
+            container.appendChild(chip);
+        }
+
+        function removeFilter(id) {
+            if (id === 'wheelchair') activeFilters.wheelchair = false;
+            else if (id === 'babyChanging') activeFilters.babyChanging = false;
+            else if (id === 'genderNeutral') activeFilters.genderNeutral = false;
+            else if (id === 'rating') activeFilters.minRating = 0;
+            else if (id === 'distance') activeFilters.maxDistance = 2.0;
+            else if (id === 'favorites') activeFilters.favorites = false;
+            else if (id === 'freeAccess') activeFilters.freeAccess = false;
+
+            updateFilterUI();
+            renderBathrooms();
+            renderMapMarkers();
         }
 
         // Dark mode
@@ -1054,6 +1221,8 @@
             emergencyMode = !emergencyMode;
             document.getElementById('emergencyBtn').classList.toggle('active');
             document.getElementById('emergencyBanner').classList.toggle('active');
+            renderBathrooms();
+            renderMapMarkers();
         }
 
         // View toggle
@@ -1080,8 +1249,26 @@
             renderMapMarkers();
         }
 
+        // Update points display
+        function updatePoints(added) {
+            userStats.points += added;
+            userStats.reports += 1;
+            document.getElementById('userPoints').textContent = userStats.points;
+            document.getElementById('profilePoints').textContent = userStats.points;
+            document.getElementById('profileReports').textContent = userStats.reports;
+
+            // Update progress bar
+            const progress = (userStats.points % 500) / 500 * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
         // Profile
         function openProfile() {
+            document.getElementById('profilePoints').textContent = userStats.points;
+            document.getElementById('profileReports').textContent = userStats.reports;
+            document.getElementById('bathroomsAdded').textContent = userStats.bathroomsAdded;
+            const progress = (userStats.points % 500) / 500 * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
             document.getElementById('profileModal').classList.add('active');
         }
         function closeProfile() {
@@ -1095,26 +1282,62 @@
         function closeFilters() {
             document.getElementById('filterModal').classList.remove('active');
         }
+
+        function updateFilterUI() {
+            // Update toggle switches
+            document.getElementById('filter-wheelchair').classList.toggle('on', activeFilters.wheelchair);
+            document.getElementById('filter-babyChanging').classList.toggle('on', activeFilters.babyChanging);
+            document.getElementById('filter-genderNeutral').classList.toggle('on', activeFilters.genderNeutral);
+            document.getElementById('filter-favorites').classList.toggle('on', activeFilters.favorites);
+            document.getElementById('filter-freeAccess').classList.toggle('on', activeFilters.freeAccess);
+            document.getElementById('filter-openNow').classList.toggle('on', activeFilters.openNow);
+
+            // Update rating buttons
+            document.querySelectorAll('.rating-btn').forEach(btn => btn.classList.remove('selected'));
+            const ratingBtn = document.getElementById('rating-' + activeFilters.minRating);
+            if (ratingBtn) ratingBtn.classList.add('selected');
+
+            // Update distance display
+            document.getElementById('distanceValue').textContent = activeFilters.maxDistance.toFixed(1);
+        }
+
         function toggleFilter(filterId) {
             const toggle = document.getElementById('filter-' + filterId);
             toggle.classList.toggle('on');
-            filters[filterId] = toggle.classList.contains('on');
+            activeFilters[filterId] = toggle.classList.contains('on');
         }
+
         function setRating(rating) {
-            document.querySelectorAll('.rating-selector .rating-btn').forEach(btn => {
-                btn.classList.remove('selected');
-            });
+            document.querySelectorAll('.rating-btn').forEach(btn => btn.classList.remove('selected'));
             event.target.classList.add('selected');
-            filters.minRating = rating;
+            activeFilters.minRating = rating;
         }
+
         function updateDistance(value) {
             document.getElementById('distanceValue').textContent = value;
-            filters.maxDistance = value;
+            activeFilters.maxDistance = parseFloat(value);
         }
+
         function applyFilters() {
-            // In real app, this would filter the bathrooms
             closeFilters();
-            alert('Filters applied! 🎯\n\nShowing bathrooms that match your preferences.');
+            renderBathrooms();
+            renderMapMarkers();
+        }
+
+        function clearFilters() {
+            activeFilters = {
+                wheelchair: false,
+                babyChanging: false,
+                genderNeutral: false,
+                minRating: 0,
+                maxDistance: 2.0,
+                favorites: false,
+                freeAccess: false,
+                openNow: false
+            };
+            updateFilterUI();
+            renderBathrooms();
+            renderMapMarkers();
         }
 
         // Bathroom details
@@ -1127,9 +1350,11 @@
             document.getElementById('favoriteIcon').textContent = bathroom.favorite ? '⭐' : '☆';
             document.getElementById('detailModal').classList.add('active');
         }
+
         function closeDetail() {
             document.getElementById('detailModal').classList.remove('active');
         }
+
         function toggleFavorite() {
             if (currentBathroom) {
                 currentBathroom.favorite = !currentBathroom.favorite;
@@ -1143,41 +1368,84 @@
         function openReports() {
             document.getElementById('reportModal').classList.add('active');
         }
+
         function closeReports() {
             document.getElementById('reportModal').classList.remove('active');
         }
+
         function submitReport(type) {
-            const points = type === 'door-code' ? 20 : type === 'broken' ? 15 : type === 'photo' ? 8 : 10;
+            const points = type === 'broken' ? 15 : type === 'photo' ? 8 : 10;
             alert(`✅ Report submitted: ${type}\n\n+${points} points earned! 🎉\n\nThank you for helping the community!`);
-
-            // Update points
-            const currentPoints = parseInt(document.getElementById('userPoints').textContent);
-            document.getElementById('userPoints').textContent = currentPoints + points;
-
+            updatePoints(points);
             closeReports();
             closeDetail();
+        }
+
+        function submitReportDoorCode() {
+            const code = prompt('Enter the door code or access instructions:');
+            if (code && code.trim()) {
+                alert(`✅ Door code shared: ${code}\n\n+20 points earned! 🎉\n\nThis is the most valuable type of report!\n\nThank you for helping the community!`);
+                updatePoints(20);
+                closeReports();
+                closeDetail();
+            }
         }
 
         // Add bathroom
         function openAddBathroom() {
             document.getElementById('addBathroomModal').classList.add('active');
         }
+
         function closeAddBathroom() {
             document.getElementById('addBathroomModal').classList.remove('active');
         }
+
         function selectNewRating(rating) {
-            // Visual feedback only
             console.log('Selected rating:', rating);
         }
+
         function submitNewBathroom(e) {
             e.preventDefault();
-            alert('🎉 New bathroom added!\n\n+15 points earned!\n\nThank you for contributing to the community!');
+            const name = document.getElementById('newBathroomName').value;
+            const type = document.getElementById('newBathroomType').value;
 
-            // Update points
-            const currentPoints = parseInt(document.getElementById('userPoints').textContent);
-            document.getElementById('userPoints').textContent = currentPoints + 15;
+            // Add new bathroom to the list
+            const newId = Math.max(...bathrooms.map(b => b.id)) + 1;
+            const newBathroom = {
+                id: newId,
+                name: name,
+                type: type,
+                distanceVal: 0.1,
+                distance: '0.1 mi',
+                rating: 4.0,
+                favorite: false,
+                liveReports: 0,
+                lat: 50 + Math.random() * 10,
+                lng: 50 + Math.random() * 10,
+                wheelchair: true,
+                babyChanging: false,
+                genderNeutral: false,
+                freeAccess: true
+            };
 
+            bathrooms.unshift(newBathroom);
+            userStats.bathroomsAdded += 1;
+
+            alert(`🎉 New bathroom added: ${name}\n\n+15 points earned!\n\nThank you for contributing to the community!`);
+            updatePoints(15);
+
+            // Reset form
+            e.target.reset();
             closeAddBathroom();
+            renderBathrooms();
+            renderMapMarkers();
+        }
+
+        // Close modal on backdrop click
+        function closeModalOnBackdrop(event, modalId) {
+            if (event.target.classList.contains('modal')) {
+                document.getElementById(modalId).classList.remove('active');
+            }
         }
 
         // Initialize app
